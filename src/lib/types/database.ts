@@ -94,14 +94,15 @@ export type Database = {
       };
       ingredients: {
         Row: Ingredient;
-        Insert: Partial<Ingredient> & {
+        // unit_cost é gerado pelo Postgres (generated always as stored) e não pode ser definido pela aplicação
+        Insert: Omit<Partial<Ingredient>, "unit_cost"> & {
           user_id: string;
           name: string;
           price_paid: number;
           purchase_volume: number;
           unit: string;
         };
-        Update: Partial<Ingredient>;
+        Update: Omit<Partial<Ingredient>, "unit_cost">;
         Relationships: [];
       };
       recipes: {
