@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/auth/actions";
@@ -49,6 +50,15 @@ export default async function OnboardingPage() {
       </header>
 
       <CostSettingsForm defaultValues={defaultValues} />
+
+      <div className="flex justify-end border-t border-neutral-200 pt-6 dark:border-neutral-800">
+        <Link
+          href="/onboarding/platforms"
+          className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
+        >
+          Configurar plataformas de delivery →
+        </Link>
+      </div>
     </div>
   );
 }
