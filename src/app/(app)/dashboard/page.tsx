@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader } from "@/components/AppHeader";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import {
   aggregateRecipeCosts,
@@ -102,8 +101,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
-      <AppHeader active="dashboard" />
-
       <div>
         <h1 className="text-2xl font-semibold">Dashboard</h1>
         <p className="mt-1 text-sm text-neutral-500">

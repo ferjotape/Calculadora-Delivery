@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader } from "@/components/AppHeader";
 import { getSubscriptionStatus } from "@/lib/subscription";
 import { RecipeDetailManager } from "./RecipeDetailManager";
 
@@ -63,8 +62,6 @@ export default async function RecipeDetailPage({ params }: Props) {
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
-      <AppHeader active="recipes" />
-
       <div>
         <Link href="/onboarding/recipes" className="text-sm text-neutral-500 hover:underline">
           ← Voltar para receitas

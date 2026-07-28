@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AppHeader } from "@/components/AppHeader";
 import { getSubscriptionStatus } from "@/lib/subscription";
 import { IngredientsManager } from "./IngredientsManager";
 
@@ -28,8 +27,6 @@ export default async function IngredientsPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
-      <AppHeader active="ingredients" />
-
       <div>
         <h1 className="text-2xl font-semibold">Meus insumos</h1>
         <p className="mt-1 text-sm text-neutral-500">
