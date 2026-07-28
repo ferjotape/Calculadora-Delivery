@@ -1,15 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   addRecipeIngredient,
   removeRecipeIngredient,
+  syncRecipePlatformPrices,
   updateRecipe,
   updateRecipeIngredient,
 } from "../actions";
 import { formatCurrency, formatNumber } from "@/lib/format";
-import { computeRecipePricing } from "@/lib/pricing";
+import {
+  applyDiscount,
+  computePlatformPrice,
+  computePriceMetrics,
+  computeRecipePricing,
+} from "@/lib/pricing";
 import type { CostSettings, Recipe, RecipeIngredient } from "@/lib/types/database";
 
 type IngredientOption = {
@@ -19,12 +25,40 @@ type IngredientOption = {
   unit_cost: number;
 };
 
+type PlatformOption = {
+  id: string;
+  name: string;
+  fee_pct: number;
+};
+
 type Props = {
   recipe: Recipe;
   initialItems: RecipeIngredient[];
   availableIngredients: IngredientOption[];
   costSettings: CostSettings | null;
+  platforms: PlatformOption[];
 };
+
+type PracticedPriceStatus = "below" | "equal" | "above";
+
+const PRACTICED_PRICE_STATUS_STYLES: Record<
+  PracticedPriceStatus,
+  { label: string; className: string }
+> = {
+  below: { label: "abaixo do preço sugerido", className: "text-red-600 dark:text-red-500" },
+  equal: { label: "alinhado ao preço sugerido", className: "text-green-600 dark:text-green-500" },
+  above: { label: "acima do preço sugerido", className: "text-amber-600 dark:text-amber-500" },
+};
+
+function getPracticedPriceStatus(
+  practicedPrice: number,
+  suggestedPrice: number
+): PracticedPriceStatus {
+  if (suggestedPrice <= 0) return "equal";
+  const diffPct = Math.abs(practicedPrice - suggestedPrice) / suggestedPrice;
+  if (diffPct < 0.01) return "equal";
+  return practicedPrice < suggestedPrice ? "below" : "above";
+}
 
 const inputClass =
   "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:focus:border-neutral-100";
@@ -34,12 +68,24 @@ export function RecipeDetailManager({
   initialItems,
   availableIngredients,
   costSettings,
+  platforms,
 }: Props) {
   const [recipeName, setRecipeName] = useState(recipe.name);
   const [lossPct, setLossPct] = useState(String(recipe.loss_pct));
+  const [discountPct, setDiscountPct] = useState(String(recipe.discount_pct));
+  const [practicedPrice, setPracticedPrice] = useState(
+    recipe.practiced_price !== null ? String(recipe.practiced_price) : ""
+  );
   const [items, setItems] = useState<RecipeIngredient[]>(initialItems);
   const [error, setError] = useState<string | null>(null);
   const [isSavingDetails, startSavingDetails] = useTransition();
+  const syncedOnMountRef = useRef(false);
+
+  useEffect(() => {
+    if (syncedOnMountRef.current) return;
+    syncedOnMountRef.current = true;
+    void syncRecipePlatformPrices(recipe.id).catch(() => {});
+  }, [recipe.id]);
 
   const ingredientsMap = useMemo(
     () => new Map(availableIngredients.map((i) => [i.id, i])),
@@ -65,18 +111,66 @@ export function RecipeDetailManager({
     [totalCost, lossPct, costSettings]
   );
 
+  const discountPctNumber = Number(discountPct) || 0;
+
+  const suggestedPriceWithDiscount = useMemo(() => {
+    if (discountPctNumber <= 0 || pricing.suggestedPrice === null) return null;
+    return applyDiscount(pricing.suggestedPrice, discountPctNumber);
+  }, [discountPctNumber, pricing.suggestedPrice]);
+
+  const discountedMetrics = useMemo(() => {
+    if (suggestedPriceWithDiscount === null || pricing.costWithLoss === null) return null;
+    return computePriceMetrics(suggestedPriceWithDiscount, pricing.costWithLoss, pricing.variablePct);
+  }, [suggestedPriceWithDiscount, pricing.costWithLoss, pricing.variablePct]);
+
+  const platformRows = useMemo(() => {
+    const { suggestedPrice, costWithLoss, variablePct } = pricing;
+    if (suggestedPrice === null || costWithLoss === null) return [];
+
+    return platforms.map((platform) => {
+      const price = computePlatformPrice(suggestedPrice, platform.fee_pct);
+      if (price === null) {
+        return { platform, price: null, priceWithDiscount: null, metrics: null };
+      }
+      const priceWithDiscount = discountPctNumber > 0 ? applyDiscount(price, discountPctNumber) : null;
+      const effectivePrice = priceWithDiscount ?? price;
+      const metrics = computePriceMetrics(effectivePrice, costWithLoss, variablePct);
+      return { platform, price, priceWithDiscount, metrics };
+    });
+  }, [platforms, pricing, discountPctNumber]);
+
+  const practicedPriceNumber = practicedPrice.trim() === "" ? null : Number(practicedPrice);
+  const practicedPriceStatus =
+    practicedPriceNumber !== null &&
+    !Number.isNaN(practicedPriceNumber) &&
+    pricing.suggestedPrice !== null
+      ? getPracticedPriceStatus(practicedPriceNumber, pricing.suggestedPrice)
+      : null;
+
   const saveDetails = () => {
     const loss = Number(lossPct);
-    if (!recipeName.trim() || Number.isNaN(loss)) {
-      setError("Informe o nome da receita e a % de perda.");
+    const discount = Number(discountPct);
+    if (!recipeName.trim() || Number.isNaN(loss) || Number.isNaN(discount)) {
+      setError("Informe o nome da receita, a % de perda e o desconto corretamente.");
+      return;
+    }
+    if (practicedPrice.trim() !== "" && Number.isNaN(Number(practicedPrice))) {
+      setError("Informe um preço praticado válido.");
       return;
     }
     setError(null);
     startSavingDetails(async () => {
-      const result = await updateRecipe(recipe.id, { name: recipeName.trim(), loss_pct: loss });
+      const result = await updateRecipe(recipe.id, {
+        name: recipeName.trim(),
+        loss_pct: loss,
+        discount_pct: discount,
+        practiced_price: practicedPrice.trim() === "" ? null : Number(practicedPrice),
+      });
       if (!result.success) {
         setError(result.error ?? "Erro ao salvar a receita.");
+        return;
       }
+      void syncRecipePlatformPrices(recipe.id).catch(() => {});
     });
   };
 
@@ -84,8 +178,8 @@ export function RecipeDetailManager({
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Detalhes da receita</h2>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <div className="flex-1">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="lg:col-span-2">
             <label className="text-sm font-medium">Nome do prato</label>
             <input
               value={recipeName}
@@ -93,7 +187,7 @@ export function RecipeDetailManager({
               className={`${inputClass} mt-1`}
             />
           </div>
-          <div className="w-32">
+          <div>
             <label className="text-sm font-medium">% de perda</label>
             <input
               value={lossPct}
@@ -105,14 +199,50 @@ export function RecipeDetailManager({
               className={`${inputClass} mt-1`}
             />
           </div>
-          <button
-            type="button"
-            onClick={saveDetails}
-            disabled={isSavingDetails}
-            className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-neutral-900"
-          >
-            {isSavingDetails ? "Salvando..." : "Salvar"}
-          </button>
+          <div>
+            <label className="text-sm font-medium">Desconto/promoção (%)</label>
+            <input
+              value={discountPct}
+              onChange={(e) => setDiscountPct(e.target.value)}
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              className={`${inputClass} mt-1`}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="lg:col-span-2">
+            <label className="text-sm font-medium">Preço praticado (R$)</label>
+            <input
+              value={practicedPrice}
+              onChange={(e) => setPracticedPrice(e.target.value)}
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="Opcional"
+              className={`${inputClass} mt-1`}
+            />
+            {practicedPriceStatus && (
+              <p
+                className={`mt-1 text-xs font-medium ${PRACTICED_PRICE_STATUS_STYLES[practicedPriceStatus].className}`}
+              >
+                {PRACTICED_PRICE_STATUS_STYLES[practicedPriceStatus].label}
+              </p>
+            )}
+          </div>
+          <div className="flex items-end lg:col-span-2 lg:justify-end">
+            <button
+              type="button"
+              onClick={saveDetails}
+              disabled={isSavingDetails}
+              className="w-full rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 sm:w-auto dark:bg-white dark:text-neutral-900"
+            >
+              {isSavingDetails ? "Salvando..." : "Salvar"}
+            </button>
+          </div>
         </div>
       </section>
 
@@ -184,8 +314,8 @@ export function RecipeDetailManager({
         <div>
           <h2 className="text-lg font-semibold">Precificação sugerida</h2>
           <p className="text-sm text-neutral-500">
-            Calculada a partir do custo dos insumos, da % de perda e das Configurações de Custos.
-            Ainda não considera taxas de plataforma nem desconto.
+            Calculada a partir do custo dos insumos, da % de perda e das Configurações de Custos
+            (sem taxa de plataforma).
           </p>
         </div>
 
@@ -240,6 +370,105 @@ export function RecipeDetailManager({
             }
           />
         </div>
+
+        {discountPctNumber > 0 && suggestedPriceWithDiscount !== null && discountedMetrics && (
+          <div className="grid grid-cols-2 gap-4 border-t border-neutral-200 pt-4 sm:grid-cols-4 dark:border-neutral-800">
+            <Stat
+              label={`Preço com desconto (${formatNumber(discountPctNumber)}%)`}
+              value={formatCurrency(suggestedPriceWithDiscount)}
+              highlight
+            />
+            <Stat
+              label="Lucro com desconto"
+              value={`${formatCurrency(discountedMetrics.profitValue)} (${formatNumber(
+                discountedMetrics.profitPct,
+                { minimumFractionDigits: 1, maximumFractionDigits: 1 }
+              )}%)`}
+            />
+            <Stat
+              label="CMV com desconto"
+              value={`${formatNumber(discountedMetrics.cmvPct, {
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1,
+              })}%`}
+            />
+          </div>
+        )}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div>
+          <h2 className="text-lg font-semibold">Preço por plataforma</h2>
+          <p className="text-sm text-neutral-500">
+            Preço para que, descontada a taxa de cada plataforma ativa, sobre o preço sugerido.
+          </p>
+        </div>
+
+        {pricing.suggestedPrice === null ? (
+          <p className="text-sm text-neutral-400">
+            Calcule o preço sugerido acima para ver o preço por plataforma.
+          </p>
+        ) : platforms.length === 0 ? (
+          <p className="text-sm text-neutral-400">
+            Nenhuma plataforma ativa cadastrada.{" "}
+            <Link href="/onboarding/platforms" className="underline">
+              Cadastre suas plataformas de delivery
+            </Link>
+            .
+          </p>
+        ) : (
+          <div className="overflow-x-auto rounded-md border border-neutral-200 dark:border-neutral-800">
+            <table className="w-full min-w-[560px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-neutral-200 bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
+                  <th className="px-3 py-2 font-medium">Plataforma</th>
+                  <th className="px-3 py-2 font-medium">Taxa</th>
+                  <th className="px-3 py-2 font-medium">Preço sugerido</th>
+                  {discountPctNumber > 0 && (
+                    <th className="px-3 py-2 font-medium">Preço com desconto</th>
+                  )}
+                  <th className="px-3 py-2 font-medium">Lucro</th>
+                  <th className="px-3 py-2 font-medium">CMV</th>
+                </tr>
+              </thead>
+              <tbody>
+                {platformRows.map(({ platform, price, priceWithDiscount, metrics }) => (
+                  <tr
+                    key={platform.id}
+                    className="border-b border-neutral-200 last:border-b-0 dark:border-neutral-800"
+                  >
+                    <td className="px-3 py-2 font-medium">{platform.name}</td>
+                    <td className="px-3 py-2 text-neutral-500">
+                      {formatNumber(platform.fee_pct)}%
+                    </td>
+                    <td className="px-3 py-2">{price !== null ? formatCurrency(price) : "—"}</td>
+                    {discountPctNumber > 0 && (
+                      <td className="px-3 py-2">
+                        {priceWithDiscount !== null ? formatCurrency(priceWithDiscount) : "—"}
+                      </td>
+                    )}
+                    <td className="px-3 py-2">
+                      {metrics
+                        ? `${formatCurrency(metrics.profitValue)} (${formatNumber(
+                            metrics.profitPct,
+                            { minimumFractionDigits: 1, maximumFractionDigits: 1 }
+                          )}%)`
+                        : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-neutral-500">
+                      {metrics
+                        ? `${formatNumber(metrics.cmvPct, {
+                            minimumFractionDigits: 1,
+                            maximumFractionDigits: 1,
+                          })}%`
+                        : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
     </div>
   );
@@ -353,6 +582,7 @@ function AddRecipeIngredientForm({
         setIngredientId("");
         setQuantity("");
         setPickerKey((k) => k + 1);
+        void syncRecipePlatformPrices(recipeId).catch(() => {});
       } else {
         onError(result.error ?? "Erro ao adicionar insumo.");
       }
@@ -434,6 +664,7 @@ function RecipeItemRow({
       if (result.success && result.recipeIngredient) {
         onUpdated(result.recipeIngredient);
         setIsEditing(false);
+        void syncRecipePlatformPrices(recipeId).catch(() => {});
       } else {
         onError(result.error ?? "Erro ao salvar insumo.");
       }
@@ -448,6 +679,7 @@ function RecipeItemRow({
       const result = await removeRecipeIngredient(item.id, recipeId);
       if (result.success) {
         onDeleted(item.id);
+        void syncRecipePlatformPrices(recipeId).catch(() => {});
       } else {
         onError(result.error ?? "Erro ao remover insumo da receita.");
       }

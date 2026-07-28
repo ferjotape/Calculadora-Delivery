@@ -7,6 +7,13 @@ export const recipeSchema = z.object({
 
 export type RecipeInput = z.infer<typeof recipeSchema>;
 
+export const recipeDetailsSchema = recipeSchema.extend({
+  discount_pct: z.number().min(0, "Deve ser >= 0").max(100, "Deve ser <= 100"),
+  practiced_price: z.number().min(0, "Deve ser >= 0").nullable(),
+});
+
+export type RecipeDetailsInput = z.infer<typeof recipeDetailsSchema>;
+
 export const recipeIngredientSchema = z.object({
   ingredient_id: z.string().uuid("Selecione um insumo"),
   quantity_used: z.number().gt(0, "Deve ser maior que 0"),
