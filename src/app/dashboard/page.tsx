@@ -10,6 +10,7 @@ import {
   getPracticedPriceStatus,
   type PracticedPriceStatus,
 } from "@/lib/pricing";
+import { getSubscriptionStatus } from "@/lib/subscription";
 
 type DashboardRecipe = {
   id: string;
@@ -29,6 +30,11 @@ export default async function DashboardPage() {
 
   if (!user) {
     redirect("/login");
+  }
+
+  const subscriptionStatus = await getSubscriptionStatus(supabase, user.id);
+  if (!subscriptionStatus.isActive) {
+    redirect("/billing");
   }
 
   const { data: recipes } = await supabase

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/auth/actions";
 import { aggregateRecipeCosts } from "@/lib/pricing";
+import { getSubscriptionStatus } from "@/lib/subscription";
 import { RecipesManager, type RecipeSummary } from "./RecipesManager";
 
 export default async function RecipesPage() {
@@ -13,6 +14,11 @@ export default async function RecipesPage() {
 
   if (!user) {
     redirect("/login");
+  }
+
+  const subscriptionStatus = await getSubscriptionStatus(supabase, user.id);
+  if (!subscriptionStatus.isActive) {
+    redirect("/billing");
   }
 
   const { data: recipes } = await supabase

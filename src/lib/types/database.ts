@@ -71,6 +71,17 @@ export type RecipePlatformPrice = {
   calculated_at: string;
 };
 
+export type Subscription = {
+  id: string;
+  user_id: string;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  status: string;
+  current_period_end: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -125,6 +136,12 @@ export type Database = {
         Row: RecipePlatformPrice;
         Insert: Partial<RecipePlatformPrice> & { recipe_id: string; platform_id: string };
         Update: Partial<RecipePlatformPrice>;
+        Relationships: [];
+      };
+      subscriptions: {
+        Row: Subscription;
+        Insert: Partial<Subscription> & { user_id: string };
+        Update: Partial<Subscription>;
         Relationships: [];
       };
     };

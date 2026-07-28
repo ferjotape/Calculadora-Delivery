@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/auth/actions";
+import { getSubscriptionStatus } from "@/lib/subscription";
 import { RecipeDetailManager } from "./RecipeDetailManager";
 
 type Props = {
@@ -18,6 +19,11 @@ export default async function RecipeDetailPage({ params }: Props) {
 
   if (!user) {
     redirect("/login");
+  }
+
+  const subscriptionStatus = await getSubscriptionStatus(supabase, user.id);
+  if (!subscriptionStatus.isActive) {
+    redirect("/billing");
   }
 
   const { data: recipe } = await supabase

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/auth/actions";
+import { getSubscriptionStatus } from "@/lib/subscription";
 import { IngredientsManager } from "./IngredientsManager";
 
 export default async function IngredientsPage() {
@@ -12,6 +13,11 @@ export default async function IngredientsPage() {
 
   if (!user) {
     redirect("/login");
+  }
+
+  const subscriptionStatus = await getSubscriptionStatus(supabase, user.id);
+  if (!subscriptionStatus.isActive) {
+    redirect("/billing");
   }
 
   const { data: ingredients } = await supabase
