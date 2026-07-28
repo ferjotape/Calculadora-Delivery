@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import {
   addRecipeIngredient,
@@ -8,7 +9,8 @@ import {
   updateRecipeIngredient,
 } from "../actions";
 import { formatCurrency, formatNumber } from "@/lib/format";
-import type { Recipe, RecipeIngredient } from "@/lib/types/database";
+import { computeRecipePricing } from "@/lib/pricing";
+import type { CostSettings, Recipe, RecipeIngredient } from "@/lib/types/database";
 
 type IngredientOption = {
   id: string;
@@ -21,12 +23,18 @@ type Props = {
   recipe: Recipe;
   initialItems: RecipeIngredient[];
   availableIngredients: IngredientOption[];
+  costSettings: CostSettings | null;
 };
 
 const inputClass =
   "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:focus:border-neutral-100";
 
-export function RecipeDetailManager({ recipe, initialItems, availableIngredients }: Props) {
+export function RecipeDetailManager({
+  recipe,
+  initialItems,
+  availableIngredients,
+  costSettings,
+}: Props) {
   const [recipeName, setRecipeName] = useState(recipe.name);
   const [lossPct, setLossPct] = useState(String(recipe.loss_pct));
   const [items, setItems] = useState<RecipeIngredient[]>(initialItems);
@@ -45,6 +53,16 @@ export function RecipeDetailManager({ recipe, initialItems, availableIngredients
         return sum + item.quantity_used * unitCost;
       }, 0),
     [items, ingredientsMap]
+  );
+
+  const pricing = useMemo(
+    () =>
+      computeRecipePricing({
+        recipeCost: totalCost,
+        lossPct: Number(lossPct) || 0,
+        costSettings,
+      }),
+    [totalCost, lossPct, costSettings]
   );
 
   const saveDetails = () => {
@@ -161,6 +179,85 @@ export function RecipeDetailManager({ recipe, initialItems, availableIngredients
           </p>
         </div>
       </section>
+
+      <section className="flex flex-col gap-3 rounded-md border border-neutral-300 p-4 dark:border-neutral-700">
+        <div>
+          <h2 className="text-lg font-semibold">Precificação sugerida</h2>
+          <p className="text-sm text-neutral-500">
+            Calculada a partir do custo dos insumos, da % de perda e das Configurações de Custos.
+            Ainda não considera taxas de plataforma nem desconto.
+          </p>
+        </div>
+
+        {pricing.issue === "no_cost_settings" && (
+          <p className="text-sm text-amber-600 dark:text-amber-500">
+            Configure seus custos em{" "}
+            <Link href="/onboarding" className="underline">
+              Configurações de Custos
+            </Link>{" "}
+            para calcular o preço sugerido.
+          </p>
+        )}
+        {pricing.issue === "invalid_loss" && (
+          <p className="text-sm text-red-600">A % de perda precisa ser menor que 100%.</p>
+        )}
+        {pricing.issue === "markup_exceeds_100" && (
+          <p className="text-sm text-red-600">
+            A soma dos custos fixos, variáveis e do lucro desejado ultrapassa 100% do preço de
+            venda. Ajuste as{" "}
+            <Link href="/onboarding" className="underline">
+              Configurações de Custos
+            </Link>
+            .
+          </p>
+        )}
+        {pricing.warning && (
+          <p className="text-sm text-amber-600 dark:text-amber-500">{pricing.warning}</p>
+        )}
+
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <Stat label="Custo da receita" value={formatCurrency(totalCost)} />
+          <Stat
+            label="Custo com perda"
+            value={pricing.costWithLoss !== null ? formatCurrency(pricing.costWithLoss) : "—"}
+          />
+          <Stat
+            label="Preço sugerido"
+            value={
+              pricing.suggestedPrice !== null ? formatCurrency(pricing.suggestedPrice) : "—"
+            }
+            highlight
+          />
+          <Stat
+            label="Lucro aproximado"
+            value={
+              pricing.approxProfitValue !== null && pricing.approxProfitPct !== null
+                ? `${formatCurrency(pricing.approxProfitValue)} (${formatNumber(
+                    pricing.approxProfitPct,
+                    { minimumFractionDigits: 1, maximumFractionDigits: 1 }
+                  )}%)`
+                : "—"
+            }
+          />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="text-xs uppercase tracking-wide text-neutral-500">{label}</span>
+      <span className={highlight ? "text-2xl font-semibold" : "text-lg font-medium"}>{value}</span>
     </div>
   );
 }

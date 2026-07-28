@@ -42,6 +42,12 @@ export default async function RecipeDetailPage({ params }: Props) {
     .eq("user_id", user.id)
     .order("name", { ascending: true });
 
+  const { data: costSettings } = await supabase
+    .from("cost_settings")
+    .select("*")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-12">
       <header className="flex items-start justify-between gap-4">
@@ -65,6 +71,7 @@ export default async function RecipeDetailPage({ params }: Props) {
         recipe={recipe}
         initialItems={recipeIngredients ?? []}
         availableIngredients={ingredients ?? []}
+        costSettings={costSettings ?? null}
       />
     </div>
   );
