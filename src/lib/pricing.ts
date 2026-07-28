@@ -128,3 +128,51 @@ export function computePriceMetrics(
   const cmvPct = price > 0 ? (costWithLoss / price) * 100 : 0;
   return { profitValue, profitPct, cmvPct };
 }
+
+export type PracticedPriceStatus = "below" | "equal" | "above";
+
+/** Compara o preço praticado ao preço sugerido (tolerância de ~1% para considerar "igual"). */
+export function getPracticedPriceStatus(
+  practicedPrice: number,
+  suggestedPrice: number
+): PracticedPriceStatus {
+  if (suggestedPrice <= 0) return "equal";
+  const diffPct = Math.abs(practicedPrice - suggestedPrice) / suggestedPrice;
+  if (diffPct < 0.01) return "equal";
+  return practicedPrice < suggestedPrice ? "below" : "above";
+}
+
+type RecipeIngredientLite = {
+  recipe_id: string;
+  ingredient_id: string;
+  quantity_used: number;
+};
+
+type IngredientCostLookup = {
+  id: string;
+  unit_cost: number;
+};
+
+export type RecipeCostAggregate = {
+  totalCost: number;
+  ingredientCount: number;
+};
+
+/** Soma quantity_used * ingredient.unit_cost por receita a partir de listas já carregadas do banco. */
+export function aggregateRecipeCosts(
+  recipeIngredients: RecipeIngredientLite[],
+  ingredients: IngredientCostLookup[]
+): Map<string, RecipeCostAggregate> {
+  const unitCostById = new Map(ingredients.map((i) => [i.id, i.unit_cost]));
+  const costByRecipe = new Map<string, RecipeCostAggregate>();
+
+  for (const item of recipeIngredients) {
+    const unitCost = unitCostById.get(item.ingredient_id) ?? 0;
+    const current = costByRecipe.get(item.recipe_id) ?? { totalCost: 0, ingredientCount: 0 };
+    current.totalCost += item.quantity_used * unitCost;
+    current.ingredientCount += 1;
+    costByRecipe.set(item.recipe_id, current);
+  }
+
+  return costByRecipe;
+}

@@ -15,6 +15,8 @@ import {
   computePlatformPrice,
   computePriceMetrics,
   computeRecipePricing,
+  getPracticedPriceStatus,
+  type PracticedPriceStatus,
 } from "@/lib/pricing";
 import type { CostSettings, Recipe, RecipeIngredient } from "@/lib/types/database";
 
@@ -39,8 +41,6 @@ type Props = {
   platforms: PlatformOption[];
 };
 
-type PracticedPriceStatus = "below" | "equal" | "above";
-
 const PRACTICED_PRICE_STATUS_STYLES: Record<
   PracticedPriceStatus,
   { label: string; className: string }
@@ -49,16 +49,6 @@ const PRACTICED_PRICE_STATUS_STYLES: Record<
   equal: { label: "alinhado ao preço sugerido", className: "text-green-600 dark:text-green-500" },
   above: { label: "acima do preço sugerido", className: "text-amber-600 dark:text-amber-500" },
 };
-
-function getPracticedPriceStatus(
-  practicedPrice: number,
-  suggestedPrice: number
-): PracticedPriceStatus {
-  if (suggestedPrice <= 0) return "equal";
-  const diffPct = Math.abs(practicedPrice - suggestedPrice) / suggestedPrice;
-  if (diffPct < 0.01) return "equal";
-  return practicedPrice < suggestedPrice ? "below" : "above";
-}
 
 const inputClass =
   "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:focus:border-neutral-100";

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/app/auth/actions";
+import { aggregateRecipeCosts } from "@/lib/pricing";
 import { RecipesManager, type RecipeSummary } from "./RecipesManager";
 
 export default async function RecipesPage() {
@@ -29,16 +30,7 @@ export default async function RecipesPage() {
     .select("id, unit_cost")
     .eq("user_id", user.id);
 
-  const unitCostById = new Map((ingredients ?? []).map((i) => [i.id, i.unit_cost]));
-
-  const costByRecipe = new Map<string, { totalCost: number; ingredientCount: number }>();
-  for (const item of recipeIngredients ?? []) {
-    const unitCost = unitCostById.get(item.ingredient_id) ?? 0;
-    const current = costByRecipe.get(item.recipe_id) ?? { totalCost: 0, ingredientCount: 0 };
-    current.totalCost += item.quantity_used * unitCost;
-    current.ingredientCount += 1;
-    costByRecipe.set(item.recipe_id, current);
-  }
+  const costByRecipe = aggregateRecipeCosts(recipeIngredients ?? [], ingredients ?? []);
 
   const summaries: RecipeSummary[] = (recipes ?? []).map((recipe) => {
     const agg = costByRecipe.get(recipe.id);
@@ -55,7 +47,10 @@ export default async function RecipesPage() {
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 py-12">
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Minhas receitas</h1>
+          <Link href="/dashboard" className="text-sm text-neutral-500 hover:underline">
+            ← Dashboard
+          </Link>
+          <h1 className="mt-2 text-2xl font-semibold">Minhas receitas</h1>
           <p className="mt-1 text-sm text-neutral-500">
             Monte seus pratos a partir dos insumos já cadastrados e acompanhe o custo de cada
             receita.
@@ -75,7 +70,7 @@ export default async function RecipesPage() {
 
       <div className="flex justify-end border-t border-neutral-200 pt-6 dark:border-neutral-800">
         <Link
-          href="/onboarding"
+          href="/dashboard"
           className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
         >
           Continuar

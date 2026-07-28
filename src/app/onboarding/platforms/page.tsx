@@ -24,7 +24,10 @@ export default async function PlatformsPage() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-12">
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">Plataformas de delivery</h1>
+          <Link href="/dashboard" className="text-sm text-neutral-500 hover:underline">
+            ← Dashboard
+          </Link>
+          <h1 className="mt-2 text-2xl font-semibold">Plataformas de delivery</h1>
           <p className="mt-1 text-sm text-neutral-500">
             Cadastre as plataformas que você usa (iFood, 99Food, Keeta, própria...) e a taxa
             cobrada por cada uma.

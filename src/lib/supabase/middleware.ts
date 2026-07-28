@@ -39,7 +39,7 @@ export async function updateSession(request: NextRequest) {
 
   if (user && (request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/signup")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/onboarding";
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 

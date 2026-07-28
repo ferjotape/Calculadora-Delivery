@@ -33,7 +33,7 @@ export async function login(_prevState: AuthState, formData: FormData): Promise<
   }
 
   revalidatePath("/", "layout");
-  redirect("/onboarding");
+  redirect("/dashboard");
 }
 
 export async function signup(_prevState: AuthState, formData: FormData): Promise<AuthState> {
@@ -55,7 +55,7 @@ export async function signup(_prevState: AuthState, formData: FormData): Promise
   }
 
   revalidatePath("/", "layout");
-  redirect("/onboarding");
+  redirect("/dashboard");
 }
 
 export async function logout() {
