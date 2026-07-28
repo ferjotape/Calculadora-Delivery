@@ -167,6 +167,7 @@ function PlatformRow({
   const [name, setName] = useState(platform.name);
   const [feePct, setFeePct] = useState(String(platform.fee_pct));
   const [isPending, startTransition] = useTransition();
+  const [pendingAction, setPendingAction] = useState<"save" | "toggle" | "remove" | null>(null);
 
   const cancelEdit = () => {
     setName(platform.name);
@@ -181,8 +182,10 @@ function PlatformRow({
       return;
     }
 
+    setPendingAction("save");
     startTransition(async () => {
       const result = await updatePlatform(platform.id, { name: name.trim(), fee_pct: fee });
+      setPendingAction(null);
       if (result.success && result.platform) {
         onUpdated(result.platform);
         setIsEditing(false);
@@ -193,8 +196,10 @@ function PlatformRow({
   };
 
   const toggleActive = () => {
+    setPendingAction("toggle");
     startTransition(async () => {
       const result = await setPlatformActive(platform.id, !platform.is_active);
+      setPendingAction(null);
       if (result.success && result.platform) {
         onUpdated(result.platform);
       } else {
@@ -207,8 +212,10 @@ function PlatformRow({
     if (!window.confirm(`Remover a plataforma "${platform.name}"?`)) {
       return;
     }
+    setPendingAction("remove");
     startTransition(async () => {
       const result = await deletePlatform(platform.id);
+      setPendingAction(null);
       if (result.success) {
         onDeleted(platform.id);
       } else {
@@ -246,7 +253,7 @@ function PlatformRow({
           disabled={isPending}
           className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-neutral-900"
         >
-          Salvar
+          {pendingAction === "save" ? "Salvando..." : "Salvar"}
         </button>
         <button
           type="button"
@@ -288,7 +295,11 @@ function PlatformRow({
           disabled={isPending}
           className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
         >
-          {platform.is_active ? "Desativar" : "Ativar"}
+          {pendingAction === "toggle"
+            ? "Atualizando..."
+            : platform.is_active
+              ? "Desativar"
+              : "Ativar"}
         </button>
         <button
           type="button"
@@ -304,7 +315,7 @@ function PlatformRow({
           disabled={isPending}
           className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
         >
-          Remover
+          {pendingAction === "remove" ? "Removendo..." : "Remover"}
         </button>
       </div>
     </div>

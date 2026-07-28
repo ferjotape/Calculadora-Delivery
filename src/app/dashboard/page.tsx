@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { logout } from "@/app/auth/actions";
+import { AppHeader } from "@/components/AppHeader";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import {
   aggregateRecipeCosts,
@@ -101,23 +101,15 @@ export default async function DashboardPage() {
   const belowCount = dashboardRecipes.filter((r) => r.status === "below").length;
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-4 py-8 sm:py-12">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Visão geral da precificação do seu cardápio.
-          </p>
-        </div>
-        <form action={logout}>
-          <button
-            type="submit"
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
-          >
-            Sair
-          </button>
-        </form>
-      </header>
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
+      <AppHeader active="dashboard" />
+
+      <div>
+        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <p className="mt-1 text-sm text-neutral-500">
+          Visão geral da precificação do seu cardápio.
+        </p>
+      </div>
 
       {!costSettings && (
         <p className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">

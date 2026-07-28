@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { logout } from "@/app/auth/actions";
+import { AppHeader } from "@/components/AppHeader";
 import { getSubscriptionStatus } from "@/lib/subscription";
 import { SUBSCRIPTION_PRICE_BRL_CENTS, SUBSCRIPTION_TRIAL_DAYS } from "@/lib/stripe/plan";
 import { formatCurrency } from "@/lib/format";
@@ -42,23 +42,15 @@ export default async function BillingPage({ searchParams }: Props) {
     : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-12">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">Minha assinatura</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Acesso ao Precifica Delivery é por assinatura mensal.
-          </p>
-        </div>
-        <form action={logout}>
-          <button
-            type="submit"
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
-          >
-            Sair
-          </button>
-        </form>
-      </header>
+    <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-6 sm:py-12">
+      <AppHeader active="billing" />
+
+      <div>
+        <h1 className="text-2xl font-semibold">Minha assinatura</h1>
+        <p className="mt-1 text-sm text-neutral-500">
+          Acesso ao Precifica Delivery é por assinatura mensal.
+        </p>
+      </div>
 
       {success === "1" && (
         <p className="rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-900 dark:bg-green-950 dark:text-green-300">

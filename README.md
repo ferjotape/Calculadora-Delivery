@@ -67,6 +67,45 @@ Todas as tabelas têm Row Level Security habilitada: cada usuário só enxerga (
 - `/dashboard`, `/onboarding/ingredients` e `/onboarding/recipes` (lista e detalhe) exigem assinatura ativa/em teste — sem isso, o usuário é redirecionado para `/billing`.
 - `/onboarding` (Configurações de Custos) e `/onboarding/platforms` permanecem acessíveis mesmo sem assinatura ativa.
 
-## Deploy
+## Deploy no Vercel
 
-Deploy recomendado na [Vercel](https://vercel.com/new), configurando as mesmas variáveis de ambiente do `.env.local` no projeto (incluindo `SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` e `NEXT_PUBLIC_SITE_URL` apontando para o domínio de produção).
+> Estes passos são feitos no painel do Vercel/Stripe/Supabase — precisam ser
+> executados por quem tem acesso a essas contas.
+
+1. **Importar o repositório**: em [vercel.com/new](https://vercel.com/new), conecte sua conta do GitHub e importe este repositório. O Vercel detecta automaticamente que é um projeto Next.js — não é necessário configurar build command, output directory ou root directory manualmente.
+
+2. **Configurar as variáveis de ambiente**: em Project Settings → Environment Variables, adicione (para os ambientes Production e Preview):
+
+   | Variável | Valor |
+   |---|---|
+   | `NEXT_PUBLIC_SUPABASE_URL` | URL do projeto Supabase |
+   | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon/public key do Supabase |
+   | `SUPABASE_SERVICE_ROLE_KEY` | service_role key do Supabase (secreta) |
+   | `STRIPE_SECRET_KEY` | chave secreta do Stripe (comece com a de teste, troque para live quando for cobrar de verdade) |
+   | `STRIPE_WEBHOOK_SECRET` | signing secret do webhook (veja o passo 4) |
+   | `NEXT_PUBLIC_SITE_URL` | URL de produção do app, ex: `https://seu-app.vercel.app` ou seu domínio próprio |
+
+3. **Primeiro deploy**: clique em Deploy. O Vercel builda e publica; anote a URL gerada (ou configure seu domínio próprio em Project Settings → Domains) — é o valor que vai em `NEXT_PUBLIC_SITE_URL`.
+
+4. **Webhook do Stripe apontando para produção**: no Dashboard do Stripe (Developers → Webhooks), crie (ou edite) o endpoint para `https://<sua-url>/api/stripe/webhook`, com os eventos `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated` e `customer.subscription.deleted`. Copie o novo "Signing secret" e atualize `STRIPE_WEBHOOK_SECRET` no Vercel (é diferente do secret usado em desenvolvimento local com o Stripe CLI). Depois de trocar uma env var, é preciso fazer um novo deploy (ou "Redeploy") para ela valer.
+
+5. **Redirect URL do Supabase Auth**: em Authentication → URL Configuration no Supabase, adicione a URL de produção (`https://<sua-url>/auth/callback`) às Redirect URLs permitidas — senão a confirmação de e-mail (se habilitada) redireciona para o lugar errado.
+
+6. **Confirmar as variáveis**: em Project Settings → Environment Variables, revise se as 6 variáveis acima estão presentes, sem espaços/aspas extras, e no ambiente certo (Production). Um jeito rápido de checar em runtime: se `/billing` carregar sem erro 500 e mostrar "Sem assinatura", as chaves do Supabase e do Stripe estão minimamente funcionais.
+
+## Checklist de teste do fluxo completo
+
+Depois do deploy, com o Stripe em modo teste (cartão `4242 4242 4242 4242`, qualquer data futura/CVC), valide o fluxo do zero:
+
+- [ ] **Cadastro**: `/signup` com um e-mail novo → redireciona para `/dashboard`.
+- [ ] **Bloqueio por assinatura**: sem assinatura ainda, `/dashboard` deve redirecionar para `/billing`.
+- [ ] **Checkout**: em `/billing`, clicar em "Assinar" → completar o Checkout do Stripe (modo teste) → volta para `/billing?success=1`.
+- [ ] **Liberação de acesso**: em poucos segundos (após o webhook processar), o status em `/billing` muda para "Em teste grátis" e `/dashboard` passa a carregar normalmente.
+- [ ] **Onboarding**: em `/onboarding`, preencher custos fixos/variáveis/lucro desejado e salvar.
+- [ ] **Plataformas**: em `/onboarding/platforms`, cadastrar ao menos uma plataforma ativa (ex: iFood, 20%).
+- [ ] **Insumos**: em `/onboarding/ingredients`, cadastrar 2-3 insumos.
+- [ ] **Receita**: em `/onboarding/recipes`, criar uma receita, adicionar os insumos com quantidade e conferir o custo total.
+- [ ] **Preço**: na receita, conferir preço sugerido, lucro aproximado, preço por plataforma e o efeito de preencher desconto/preço praticado.
+- [ ] **Dashboard**: voltar ao `/dashboard` e conferir se a receita aparece com os números certos e se o resumo (total, lucro médio, abaixo do ideal) bate.
+- [ ] **Webhook em produção**: no Dashboard do Stripe → Webhooks → seu endpoint, conferir se os eventos do teste acima aparecem como entregues com sucesso (200).
+- [ ] **Cancelamento** (opcional): cancelar a assinatura de teste no Stripe e confirmar que, após o webhook atualizar o status, `/dashboard` volta a redirecionar para `/billing`.

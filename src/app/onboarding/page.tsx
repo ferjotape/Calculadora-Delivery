@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { logout } from "@/app/auth/actions";
+import { AppHeader } from "@/components/AppHeader";
 import { CostSettingsForm } from "./CostSettingsForm";
 import type { CostSettingsInput } from "@/lib/validation/cost-settings";
 
@@ -31,26 +31,15 @@ export default async function OnboardingPage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-12">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <Link href="/dashboard" className="text-sm text-neutral-500 hover:underline">
-            ← Dashboard
-          </Link>
-          <h1 className="mt-2 text-2xl font-semibold">Configurações de custos</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Esses dados servem de base para calcular o preço ideal dos seus pratos.
-          </p>
-        </div>
-        <form action={logout}>
-          <button
-            type="submit"
-            className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
-          >
-            Sair
-          </button>
-        </form>
-      </header>
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
+      <AppHeader active="costs" />
+
+      <div>
+        <h1 className="text-2xl font-semibold">Configurações de custos</h1>
+        <p className="mt-1 text-sm text-neutral-500">
+          Esses dados servem de base para calcular o preço ideal dos seus pratos.
+        </p>
+      </div>
 
       <CostSettingsForm defaultValues={defaultValues} />
 

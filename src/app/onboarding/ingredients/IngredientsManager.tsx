@@ -392,7 +392,7 @@ function IngredientRow({
               disabled={isPending}
               className="rounded-md bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-60 dark:bg-white dark:text-neutral-900"
             >
-              Salvar
+              {isPending ? "Salvando..." : "Salvar"}
             </button>
             <button
               type="button"
@@ -441,7 +441,7 @@ function IngredientRow({
             disabled={isPending}
             className="rounded-md border border-neutral-300 px-3 py-1.5 text-xs text-neutral-600 hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
           >
-            Remover
+            {isPending ? "Removendo..." : "Remover"}
           </button>
         </div>
       </td>

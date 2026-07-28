@@ -28,6 +28,9 @@ export function RecipesManager({ initialRecipes }: Props) {
   const [lossPct, setLossPct] = useState("0");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [pendingAction, setPendingAction] = useState<
+    { type: "create" } | { type: "remove"; id: string } | null
+  >(null);
 
   const submit = () => {
     const loss = Number(lossPct);
@@ -37,11 +40,13 @@ export function RecipesManager({ initialRecipes }: Props) {
     }
 
     setError(null);
+    setPendingAction({ type: "create" });
     startTransition(async () => {
       const result = await createRecipe({ name: name.trim(), loss_pct: loss });
       if (result.success && result.recipe) {
         router.push(`/onboarding/recipes/${result.recipe.id}`);
       } else {
+        setPendingAction(null);
         setError(result.error ?? "Erro ao criar receita.");
       }
     });
@@ -55,8 +60,10 @@ export function RecipesManager({ initialRecipes }: Props) {
     ) {
       return;
     }
+    setPendingAction({ type: "remove", id: recipe.id });
     startTransition(async () => {
       const result = await deleteRecipe(recipe.id);
+      setPendingAction(null);
       if (result.success) {
         setRecipes((prev) => prev.filter((r) => r.id !== recipe.id));
       } else {
@@ -102,7 +109,7 @@ export function RecipesManager({ initialRecipes }: Props) {
             disabled={isPending}
             className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-neutral-900"
           >
-            {isPending ? "Criando..." : "Criar receita"}
+            {pendingAction?.type === "create" ? "Criando..." : "Criar receita"}
           </button>
         </div>
       </section>
@@ -142,7 +149,9 @@ export function RecipesManager({ initialRecipes }: Props) {
                 disabled={isPending}
                 className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
               >
-                Remover
+                {pendingAction?.type === "remove" && pendingAction.id === recipe.id
+                  ? "Removendo..."
+                  : "Remover"}
               </button>
             </div>
           </div>
