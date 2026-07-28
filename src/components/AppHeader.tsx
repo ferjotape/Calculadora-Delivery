@@ -23,7 +23,7 @@ export function AppHeader({ active }: { active: AppNavKey }) {
   return (
     <header className="flex flex-col gap-3 border-b border-neutral-200 pb-4 dark:border-neutral-800">
       <div className="flex items-center justify-between gap-4">
-        <span className="text-sm font-semibold tracking-tight text-neutral-900 dark:text-white">
+        <span className="font-heading text-sm font-bold tracking-tight text-accent">
           Precifica Delivery
         </span>
         <form action={logout}>
@@ -42,7 +42,7 @@ export function AppHeader({ active }: { active: AppNavKey }) {
             aria-current={item.key === active ? "page" : undefined}
             className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
               item.key === active
-                ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
+                ? "bg-accent text-white"
                 : "border border-neutral-300 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
             }`}
           >

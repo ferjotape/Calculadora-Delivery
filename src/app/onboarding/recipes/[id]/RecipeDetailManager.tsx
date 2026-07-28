@@ -476,7 +476,15 @@ function Stat({
   return (
     <div className="flex flex-col gap-1">
       <span className="text-xs uppercase tracking-wide text-neutral-500">{label}</span>
-      <span className={highlight ? "text-2xl font-semibold" : "text-lg font-medium"}>{value}</span>
+      <span
+        className={
+          highlight
+            ? "font-heading text-2xl font-bold text-accent"
+            : "text-lg font-medium"
+        }
+      >
+        {value}
+      </span>
     </div>
   );
 }

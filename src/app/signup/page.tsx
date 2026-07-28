@@ -9,7 +9,7 @@ export default function SignupPage() {
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-sm flex-col justify-center gap-6 px-4 py-12">
-      <p className="text-center text-xs font-semibold uppercase tracking-wide text-neutral-400">
+      <p className="font-heading text-center text-xs font-bold uppercase tracking-wide text-accent">
         Precifica Delivery
       </p>
 

@@ -229,7 +229,9 @@ function RecipeCard({ recipe }: { recipe: DashboardRecipe }) {
         </div>
         <div>
           <dt className="text-xs text-neutral-500">Preço sugerido</dt>
-          <dd>{recipe.suggestedPrice !== null ? formatCurrency(recipe.suggestedPrice) : "—"}</dd>
+          <dd className="font-heading font-bold text-accent">
+            {recipe.suggestedPrice !== null ? formatCurrency(recipe.suggestedPrice) : "—"}
+          </dd>
         </div>
         <div>
           <dt className="text-xs text-neutral-500">Preço praticado</dt>
