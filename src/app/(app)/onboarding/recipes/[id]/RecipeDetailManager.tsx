@@ -321,16 +321,6 @@ export function RecipeDetailManager({
         {pricing.issue === "invalid_loss" && (
           <p className="text-sm text-red-600">A % de perda precisa ser menor que 100%.</p>
         )}
-        {pricing.issue === "markup_exceeds_100" && (
-          <p className="text-sm text-red-600">
-            A soma dos custos fixos, variáveis e do lucro desejado ultrapassa 100% do preço de
-            venda. Ajuste as{" "}
-            <Link href="/onboarding" className="underline">
-              Configurações de Custos
-            </Link>
-            .
-          </p>
-        )}
         {pricing.warning && (
           <p className="text-sm text-amber-600 dark:text-amber-500">{pricing.warning}</p>
         )}

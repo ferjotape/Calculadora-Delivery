@@ -1,6 +1,14 @@
 import type { CostSettings } from "@/lib/types/database";
 
-export type RecipePricingIssue = "no_cost_settings" | "invalid_loss" | "markup_exceeds_100";
+export type RecipePricingIssue = "no_cost_settings" | "invalid_loss";
+
+/**
+ * Nunca deixamos o divisor do markup chegar a zero ou menos — cada
+ * restaurante tem uma estrutura de custo diferente, então em vez de
+ * bloquear o cálculo quando os percentuais somam perto de/acima de 100%,
+ * aplicamos uma margem de segurança mínima e avisamos o usuário.
+ */
+const MIN_MARKUP_DIVISOR = 0.05;
 
 export type RecipePricingResult = {
   costWithLoss: number | null;
@@ -62,7 +70,7 @@ export function computeRecipePricing({
   const hasRevenueEstimate = Boolean(
     costSettings.avg_monthly_revenue && costSettings.avg_monthly_revenue > 0
   );
-  const fixedPct = hasRevenueEstimate
+  let fixedPct = hasRevenueEstimate
     ? fixedCostsTotal / (costSettings.avg_monthly_revenue as number)
     : 0;
   const variablePct =
@@ -70,9 +78,32 @@ export function computeRecipePricing({
     100;
   const profitPct = costSettings.desired_profit_pct / 100;
 
-  const divisor = 1 - (fixedPct + variablePct + profitPct);
-  if (divisor <= 0) {
-    return emptyResult(costWithLoss, "markup_exceeds_100", variablePct);
+  let warning =
+    fixedCostsTotal > 0 && !hasRevenueEstimate
+      ? "Informe o faturamento médio mensal em Configurações de Custos para considerar os custos fixos no cálculo do markup."
+      : null;
+
+  let divisor = 1 - (fixedPct + variablePct + profitPct);
+
+  if (divisor < MIN_MARKUP_DIVISOR) {
+    // Cada restaurante tem uma estrutura de custo diferente — em vez de
+    // bloquear o cálculo, primeiro reduzimos a fatia de custos fixos (é uma
+    // estimativa baseada no faturamento médio, não uma taxa cobrada por
+    // venda), preservando os custos variáveis reais e a margem de lucro
+    // desejada pelo usuário.
+    const maxFixedPct = Math.max(0, 1 - MIN_MARKUP_DIVISOR - variablePct - profitPct);
+    if (fixedPct > maxFixedPct) {
+      fixedPct = maxFixedPct;
+      divisor = 1 - (fixedPct + variablePct + profitPct);
+      warning =
+        "Os custos fixos, em relação ao faturamento médio mensal informado, são altos demais para caber integralmente no preço junto com o lucro desejado. Consideramos uma fatia menor deles — revise o faturamento médio mensal ou os custos fixos em Configurações de Custos para um cálculo mais preciso.";
+    }
+
+    if (divisor < MIN_MARKUP_DIVISOR) {
+      divisor = MIN_MARKUP_DIVISOR;
+      warning =
+        "A soma das taxas variáveis com o lucro desejado está muito próxima de (ou passa de) 100% do preço de venda. Calculamos um preço com margem de segurança mínima — revise o lucro desejado ou as taxas variáveis em Configurações de Custos.";
+    }
   }
 
   const markup = 1 / divisor;
@@ -80,11 +111,6 @@ export function computeRecipePricing({
   const variableCostsApplied = variablePct * suggestedPrice;
   const approxProfitValue = suggestedPrice - costWithLoss - variableCostsApplied;
   const approxProfitPct = suggestedPrice > 0 ? (approxProfitValue / suggestedPrice) * 100 : null;
-
-  const warning =
-    fixedCostsTotal > 0 && !hasRevenueEstimate
-      ? "Informe o faturamento médio mensal em Configurações de Custos para considerar os custos fixos no cálculo do markup."
-      : null;
 
   return {
     costWithLoss,
