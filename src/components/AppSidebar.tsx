@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { SVGProps } from "react";
+import { useEffect, useState, type SVGProps } from "react";
 import { logout } from "@/app/auth/actions";
 import { LogoutButton } from "./LogoutButton";
 
@@ -30,6 +30,28 @@ function getActiveKey(pathname: string): AppNavKey | null {
 export function AppSidebar() {
   const pathname = usePathname();
   const active = getActiveKey(pathname);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [lastPathname, setLastPathname] = useState(pathname);
+
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname);
+    setIsDrawerOpen(false);
+  }
+
+  useEffect(() => {
+    if (!isDrawerOpen) return;
+
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsDrawerOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = "";
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isDrawerOpen]);
 
   return (
     <>
@@ -52,37 +74,74 @@ export function AppSidebar() {
         </div>
       </aside>
 
-      {/* Mobile: barra superior com nav em pills roláveis */}
-      <header className="flex flex-col gap-3 border-b border-neutral-200 px-4 py-4 md:hidden dark:border-neutral-800">
-        <div className="flex items-center justify-between gap-4">
+      {/* Mobile: barra superior com botão de menu */}
+      <header className="flex items-center justify-between gap-4 border-b border-neutral-200 px-4 py-4 md:hidden dark:border-neutral-800">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsDrawerOpen(true)}
+            aria-label="Abrir menu"
+            aria-expanded={isDrawerOpen}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300"
+          >
+            <MenuIcon className="h-5 w-5" />
+          </button>
           <span className="font-heading text-sm font-bold tracking-tight text-accent">
             Precifica Delivery
           </span>
-          <form action={logout}>
-            <LogoutButton />
-          </form>
         </div>
-
-        <nav
-          aria-label="Navegação principal"
-          className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1"
-        >
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.key}
-              href={item.href}
-              aria-current={item.key === active ? "page" : undefined}
-              className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                item.key === active
-                  ? "bg-accent text-white"
-                  : "border border-neutral-300 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <form action={logout}>
+          <LogoutButton />
+        </form>
       </header>
+
+      {/* Mobile: menu lateral (drawer) */}
+      <div
+        className={`fixed inset-0 z-50 md:hidden ${isDrawerOpen ? "" : "pointer-events-none"}`}
+      >
+        <div
+          onClick={() => setIsDrawerOpen(false)}
+          aria-hidden="true"
+          className={`absolute inset-0 bg-neutral-900/40 transition-opacity duration-200 ${
+            isDrawerOpen ? "opacity-100" : "opacity-0"
+          }`}
+        />
+
+        <aside
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu de navegação"
+          className={`absolute inset-y-0 left-0 flex w-72 max-w-[80vw] flex-col bg-background px-4 py-6 shadow-xl transition-transform duration-200 ${
+            isDrawerOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <div className="flex items-center justify-between px-2">
+            <span className="font-heading text-base font-bold tracking-tight text-accent">
+              Precifica Delivery
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsDrawerOpen(false)}
+              aria-label="Fechar menu"
+              className="flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900"
+            >
+              <CloseIcon className="h-4 w-4" />
+            </button>
+          </div>
+
+          <nav aria-label="Navegação principal" className="mt-8 flex flex-col gap-1">
+            {NAV_ITEMS.map((item) => (
+              <SidebarLink key={item.key} item={item} isActive={item.key === active} />
+            ))}
+          </nav>
+
+          <div className="mt-auto border-t border-neutral-200 pt-4 dark:border-neutral-800">
+            <form action={logout}>
+              <LogoutButton />
+            </form>
+          </div>
+        </aside>
+      </div>
     </>
   );
 }
@@ -112,6 +171,32 @@ function SidebarLink({
 }
 
 type IconComponent = (props: SVGProps<SVGSVGElement>) => React.JSX.Element;
+
+function MenuIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        d="M3 5.5H17M3 10H17M3 14.5H17"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function CloseIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        d="M5 5L15 15M15 5L5 15"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
 
 function DashboardIcon(props: SVGProps<SVGSVGElement>) {
   return (
