@@ -125,6 +125,63 @@ export function computeRecipePricing({
   };
 }
 
+export type CostSettingsSummary = {
+  fixedCostsTotal: number;
+  /** Fração (ex: 0.1 para 10%) da soma de taxa de cartão + embalagem + entrega grátis. */
+  variablePct: number;
+  /** Fração dos custos fixos sobre o faturamento médio mensal; 0 se não houver estimativa. */
+  fixedPct: number;
+  hasRevenueEstimate: boolean;
+  /** Custos fixos + variáveis (sobre o faturamento médio) em R$; null se não houver faturamento médio informado. */
+  totalCostsValue: number | null;
+  /** (fixedPct + variablePct) em %, mesma fração usada no divisor do markup em computeRecipePricing. */
+  totalCostsPct: number;
+};
+
+/**
+ * Resumo dos custos fixos + variáveis das Configurações de Custos, para exibição
+ * agregada (ex: cards do dashboard). Não participa do cálculo do markup por receita
+ * (veja computeRecipePricing) — apenas replica as mesmas frações de custo fixo/variável.
+ */
+export function computeCostSettingsSummary(
+  costSettings: CostSettings | null
+): CostSettingsSummary {
+  if (!costSettings) {
+    return {
+      fixedCostsTotal: 0,
+      variablePct: 0,
+      fixedPct: 0,
+      hasRevenueEstimate: false,
+      totalCostsValue: null,
+      totalCostsPct: 0,
+    };
+  }
+
+  const fixedCostsTotal = costSettings.fixed_costs.reduce((sum, item) => sum + item.value, 0);
+  const hasRevenueEstimate = Boolean(
+    costSettings.avg_monthly_revenue && costSettings.avg_monthly_revenue > 0
+  );
+  const variablePct =
+    (costSettings.card_fee_pct + costSettings.packaging_pct + costSettings.free_delivery_pct) /
+    100;
+  const fixedPct = hasRevenueEstimate
+    ? fixedCostsTotal / (costSettings.avg_monthly_revenue as number)
+    : 0;
+
+  const totalCostsValue = hasRevenueEstimate
+    ? fixedCostsTotal + variablePct * (costSettings.avg_monthly_revenue as number)
+    : null;
+
+  return {
+    fixedCostsTotal,
+    variablePct,
+    fixedPct,
+    hasRevenueEstimate,
+    totalCostsValue,
+    totalCostsPct: (fixedPct + variablePct) * 100,
+  };
+}
+
 /** Preço de venda na plataforma para que, descontada a taxa, sobre o preço sugerido. */
 export function computePlatformPrice(suggestedPrice: number, feePct: number): number | null {
   const divisor = 1 - feePct / 100;

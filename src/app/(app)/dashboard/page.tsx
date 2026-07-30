@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { SVGProps } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import {
   aggregateRecipeCosts,
+  computeCostSettingsSummary,
   computePriceMetrics,
   computeRecipePricing,
   getPracticedPriceStatus,
@@ -89,6 +91,8 @@ export default async function DashboardPage() {
     };
   });
 
+  const costSummary = computeCostSettingsSummary(costSettings ?? null);
+
   const totalRecipes = dashboardRecipes.length;
   const profitValues = dashboardRecipes
     .map((r) => r.profitPct)
@@ -108,6 +112,28 @@ export default async function DashboardPage() {
         </p>
       </div>
 
+      <section className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <ResumoCard
+          icon={<RecipeBookIcon className="h-5 w-5" />}
+          label="Receitas cadastradas"
+          value={String(totalRecipes)}
+        />
+        <ResumoCard
+          icon={<CoinIcon className="h-5 w-5" />}
+          label="Custos totais (R$)"
+          value={
+            costSummary.totalCostsValue !== null
+              ? formatCurrency(costSummary.totalCostsValue)
+              : "—"
+          }
+        />
+        <ResumoCard
+          icon={<PercentIcon className="h-5 w-5" />}
+          label="Custos totais (%)"
+          value={`${formatNumber(costSummary.totalCostsPct, { maximumFractionDigits: 1 })}%`}
+        />
+      </section>
+
       {!costSettings && (
         <p className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
           Configure seus custos em{" "}
@@ -118,8 +144,7 @@ export default async function DashboardPage() {
         </p>
       )}
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <SummaryStat label="Receitas cadastradas" value={String(totalRecipes)} />
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <SummaryStat
           label="Lucro médio"
           value={avgProfitPct !== null ? `${formatNumber(avgProfitPct, { maximumFractionDigits: 1 })}%` : "—"}
@@ -195,6 +220,67 @@ function SummaryStat({
         {value}
       </p>
     </div>
+  );
+}
+
+function ResumoCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex flex-col gap-3 rounded-md border border-neutral-300 p-4 dark:border-neutral-700">
+      <span className="flex h-9 w-9 items-center justify-center rounded-md bg-accent/10 text-accent">
+        {icon}
+      </span>
+      <div>
+        <p className="font-heading text-xl font-bold sm:text-2xl">{value}</p>
+        <p className="mt-1 text-xs uppercase tracking-wide text-neutral-500">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function RecipeBookIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        d="M10 4.5C8.5 3.5 6 3.2 4 3.6V15.6C6 15.2 8.5 15.5 10 16.5C11.5 15.5 14 15.2 16 15.6V3.6C14 3.2 11.5 3.5 10 4.5Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path d="M10 4.5V16.5" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function CoinIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M10 6.2V13.8" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path
+        d="M12.1 8.1C12.1 7.27 11.16 6.6 10 6.6C8.84 6.6 7.9 7.27 7.9 8.1C7.9 8.93 8.66 9.3 10 9.6C11.34 9.9 12.1 10.27 12.1 11.1C12.1 11.93 11.16 12.6 10 12.6C8.84 12.6 7.9 11.93 7.9 11.1"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function PercentIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path d="M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="6" cy="6" r="1.8" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="14" cy="14" r="1.8" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
   );
 }
 
