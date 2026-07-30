@@ -82,7 +82,7 @@ export function RecipesManager({ initialRecipes }: Props) {
           </p>
         </div>
 
-        <div className="flex items-start gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
           <div className="flex-1">
             <input
               value={name}
@@ -91,7 +91,7 @@ export function RecipesManager({ initialRecipes }: Props) {
               className={inputClass}
             />
           </div>
-          <div className="w-32">
+          <div className="sm:w-32">
             <input
               value={lossPct}
               onChange={(e) => setLossPct(e.target.value)}
@@ -107,7 +107,7 @@ export function RecipesManager({ initialRecipes }: Props) {
             type="button"
             onClick={submit}
             disabled={isPending}
-            className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-neutral-900"
+            className="w-full rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 sm:w-auto dark:bg-white dark:text-neutral-900"
           >
             {pendingAction?.type === "create" ? "Criando..." : "Criar receita"}
           </button>

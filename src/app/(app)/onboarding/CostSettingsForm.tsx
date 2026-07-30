@@ -60,7 +60,7 @@ export function CostSettingsForm({ defaultValues }: Props) {
           )}
 
           {fields.map((field, index) => (
-            <div key={field.id} className="flex items-start gap-2">
+            <div key={field.id} className="flex flex-col gap-2 sm:flex-row sm:items-start">
               <div className="flex-1">
                 <input
                   {...register(`fixed_costs.${index}.name`)}
@@ -73,7 +73,7 @@ export function CostSettingsForm({ defaultValues }: Props) {
                   </p>
                 )}
               </div>
-              <div className="w-36">
+              <div className="sm:w-36">
                 <input
                   {...register(`fixed_costs.${index}.value`, { valueAsNumber: true })}
                   type="number"

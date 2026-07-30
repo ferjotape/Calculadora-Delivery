@@ -118,7 +118,7 @@ function NewPlatformForm({
         </button>
       </div>
 
-      <div className="flex items-start gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
         <div className="flex-1">
           <input
             value={name}
@@ -127,7 +127,7 @@ function NewPlatformForm({
             className={inputClass}
           />
         </div>
-        <div className="w-36">
+        <div className="sm:w-36">
           <input
             value={feePct}
             onChange={(e) => setFeePct(e.target.value)}
@@ -143,7 +143,7 @@ function NewPlatformForm({
           type="button"
           onClick={submit}
           disabled={isPending}
-          className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-neutral-900"
+          className="w-full rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-60 sm:w-auto dark:bg-white dark:text-neutral-900"
         >
           {isPending ? "Adicionando..." : "Adicionar"}
         </button>
@@ -226,7 +226,7 @@ function PlatformRow({
 
   if (isEditing) {
     return (
-      <div className="flex items-start gap-2 rounded-md border border-neutral-300 p-3 dark:border-neutral-700">
+      <div className="flex flex-col gap-2 rounded-md border border-neutral-300 p-3 sm:flex-row sm:items-start dark:border-neutral-700">
         <div className="flex-1">
           <input
             value={name}
@@ -235,7 +235,7 @@ function PlatformRow({
             className={inputClass}
           />
         </div>
-        <div className="w-28">
+        <div className="sm:w-28">
           <input
             value={feePct}
             onChange={(e) => setFeePct(e.target.value)}
@@ -247,29 +247,31 @@ function PlatformRow({
             className={inputClass}
           />
         </div>
-        <button
-          type="button"
-          onClick={save}
-          disabled={isPending}
-          className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-neutral-900"
-        >
-          {pendingAction === "save" ? "Salvando..." : "Salvar"}
-        </button>
-        <button
-          type="button"
-          onClick={cancelEdit}
-          disabled={isPending}
-          className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
-        >
-          Cancelar
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={save}
+            disabled={isPending}
+            className="flex-1 rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-60 sm:flex-none dark:bg-white dark:text-neutral-900"
+          >
+            {pendingAction === "save" ? "Salvando..." : "Salvar"}
+          </button>
+          <button
+            type="button"
+            onClick={cancelEdit}
+            disabled={isPending}
+            className="flex-1 rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 sm:flex-none dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
+          >
+            Cancelar
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
     <div
-      className={`flex items-center justify-between gap-3 rounded-md border p-3 ${
+      className={`flex flex-col gap-3 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between ${
         platform.is_active
           ? "border-neutral-300 dark:border-neutral-700"
           : "border-neutral-200 opacity-60 dark:border-neutral-800"
@@ -288,7 +290,7 @@ function PlatformRow({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={toggleActive}
