@@ -1,6 +1,6 @@
 import type { CostSettings } from "@/lib/types/database";
 
-export type RecipePricingIssue = "no_cost_settings" | "invalid_loss";
+export type RecipePricingIssue = "no_cost_settings" | "invalid_loss" | "revenue_below_fixed_costs";
 
 /**
  * Nunca deixamos o divisor do markup chegar a zero ou menos — cada
@@ -9,6 +9,74 @@ export type RecipePricingIssue = "no_cost_settings" | "invalid_loss";
  * aplicamos uma margem de segurança mínima e avisamos o usuário.
  */
 const MIN_MARKUP_DIVISOR = 0.05;
+
+export const REVENUE_BELOW_FIXED_COSTS_WARNING =
+  "Seu faturamento médio está abaixo dos seus custos fixos. Ajuste o faturamento médio ou revise os custos fixos antes de gerar preços — do jeito que está, o cálculo não fecha.";
+
+type MarkupCalc = {
+  markup: number | null;
+  variablePct: number;
+  issue: RecipePricingIssue | null;
+  warning: string | null;
+};
+
+/**
+ * Markup ideal a partir das Configurações de Custos, independente de uma receita
+ * específica: markup = 1 / (1 - (custos fixos % + custos variáveis % + lucro desejado %)).
+ * Usado tanto por computeRecipePricing (por receita) quanto pelo indicador de
+ * "markup atual" do dashboard.
+ */
+function computeMarkupFromCostSettings(costSettings: CostSettings): MarkupCalc {
+  const fixedCostsTotal = costSettings.fixed_costs.reduce((sum, item) => sum + item.value, 0);
+  const hasRevenueEstimate = Boolean(
+    costSettings.avg_monthly_revenue && costSettings.avg_monthly_revenue > 0
+  );
+  let fixedPct = hasRevenueEstimate
+    ? fixedCostsTotal / (costSettings.avg_monthly_revenue as number)
+    : 0;
+  const variablePct =
+    (costSettings.card_fee_pct + costSettings.packaging_pct + costSettings.free_delivery_pct) /
+    100;
+  const profitPct = costSettings.desired_profit_pct / 100;
+
+  // Faturamento médio informado, mas menor que os custos fixos (+ variáveis): o
+  // cálculo do markup não fecha de jeito nenhum. Em vez de tentar "consertar" com
+  // a margem de segurança mínima (como no fallback abaixo), bloqueamos de vez —
+  // é sinal de que o faturamento médio ou os custos fixos estão errados.
+  if (hasRevenueEstimate && fixedPct + variablePct >= 1) {
+    return { markup: null, variablePct, issue: "revenue_below_fixed_costs", warning: null };
+  }
+
+  let warning =
+    fixedCostsTotal > 0 && !hasRevenueEstimate
+      ? "Informe o faturamento médio mensal em Configurações de Custos para considerar os custos fixos no cálculo do markup."
+      : null;
+
+  let divisor = 1 - (fixedPct + variablePct + profitPct);
+
+  if (divisor < MIN_MARKUP_DIVISOR) {
+    // Cada restaurante tem uma estrutura de custo diferente — em vez de
+    // bloquear o cálculo, primeiro reduzimos a fatia de custos fixos (é uma
+    // estimativa baseada no faturamento médio, não uma taxa cobrada por
+    // venda), preservando os custos variáveis reais e a margem de lucro
+    // desejada pelo usuário.
+    const maxFixedPct = Math.max(0, 1 - MIN_MARKUP_DIVISOR - variablePct - profitPct);
+    if (fixedPct > maxFixedPct) {
+      fixedPct = maxFixedPct;
+      divisor = 1 - (fixedPct + variablePct + profitPct);
+      warning =
+        "Os custos fixos, em relação ao faturamento médio mensal informado, são altos demais para caber integralmente no preço junto com o lucro desejado. Consideramos uma fatia menor deles — revise o faturamento médio mensal ou os custos fixos em Configurações de Custos para um cálculo mais preciso.";
+    }
+
+    if (divisor < MIN_MARKUP_DIVISOR) {
+      divisor = MIN_MARKUP_DIVISOR;
+      warning =
+        "A soma das taxas variáveis com o lucro desejado está muito próxima de (ou passa de) 100% do preço de venda. Calculamos um preço com margem de segurança mínima — revise o lucro desejado ou as taxas variáveis em Configurações de Custos.";
+    }
+  }
+
+  return { markup: 1 / divisor, variablePct, issue: null, warning };
+}
 
 export type RecipePricingResult = {
   costWithLoss: number | null;
@@ -66,48 +134,13 @@ export function computeRecipePricing({
     return emptyResult(costWithLoss, "no_cost_settings");
   }
 
-  const fixedCostsTotal = costSettings.fixed_costs.reduce((sum, item) => sum + item.value, 0);
-  const hasRevenueEstimate = Boolean(
-    costSettings.avg_monthly_revenue && costSettings.avg_monthly_revenue > 0
-  );
-  let fixedPct = hasRevenueEstimate
-    ? fixedCostsTotal / (costSettings.avg_monthly_revenue as number)
-    : 0;
-  const variablePct =
-    (costSettings.card_fee_pct + costSettings.packaging_pct + costSettings.free_delivery_pct) /
-    100;
-  const profitPct = costSettings.desired_profit_pct / 100;
+  const { markup, variablePct, issue, warning } = computeMarkupFromCostSettings(costSettings);
 
-  let warning =
-    fixedCostsTotal > 0 && !hasRevenueEstimate
-      ? "Informe o faturamento médio mensal em Configurações de Custos para considerar os custos fixos no cálculo do markup."
-      : null;
-
-  let divisor = 1 - (fixedPct + variablePct + profitPct);
-
-  if (divisor < MIN_MARKUP_DIVISOR) {
-    // Cada restaurante tem uma estrutura de custo diferente — em vez de
-    // bloquear o cálculo, primeiro reduzimos a fatia de custos fixos (é uma
-    // estimativa baseada no faturamento médio, não uma taxa cobrada por
-    // venda), preservando os custos variáveis reais e a margem de lucro
-    // desejada pelo usuário.
-    const maxFixedPct = Math.max(0, 1 - MIN_MARKUP_DIVISOR - variablePct - profitPct);
-    if (fixedPct > maxFixedPct) {
-      fixedPct = maxFixedPct;
-      divisor = 1 - (fixedPct + variablePct + profitPct);
-      warning =
-        "Os custos fixos, em relação ao faturamento médio mensal informado, são altos demais para caber integralmente no preço junto com o lucro desejado. Consideramos uma fatia menor deles — revise o faturamento médio mensal ou os custos fixos em Configurações de Custos para um cálculo mais preciso.";
-    }
-
-    if (divisor < MIN_MARKUP_DIVISOR) {
-      divisor = MIN_MARKUP_DIVISOR;
-      warning =
-        "A soma das taxas variáveis com o lucro desejado está muito próxima de (ou passa de) 100% do preço de venda. Calculamos um preço com margem de segurança mínima — revise o lucro desejado ou as taxas variáveis em Configurações de Custos.";
-    }
+  if (issue) {
+    return emptyResult(costWithLoss, issue, variablePct);
   }
 
-  const markup = 1 / divisor;
-  const suggestedPrice = costWithLoss * markup;
+  const suggestedPrice = costWithLoss * (markup as number);
   const variableCostsApplied = variablePct * suggestedPrice;
   const approxProfitValue = suggestedPrice - costWithLoss - variableCostsApplied;
   const approxProfitPct = suggestedPrice > 0 ? (approxProfitValue / suggestedPrice) * 100 : null;
@@ -125,6 +158,35 @@ export function computeRecipePricing({
   };
 }
 
+/**
+ * Markup atual calculado direto das Configurações de Custos (sem depender de
+ * uma receita), para o indicador do dashboard. Retorna null sempre que o
+ * resultado não seria confiável para o usuário: sem Configurações de Custos
+ * salvas, sem faturamento médio informado, ou faturamento médio abaixo dos
+ * custos fixos (mesma checagem de computeRecipePricing).
+ */
+export function computeCurrentMarkup(costSettings: CostSettings | null): number | null {
+  if (!costSettings) return null;
+  if (!costSettings.avg_monthly_revenue || costSettings.avg_monthly_revenue <= 0) return null;
+
+  const { markup, issue } = computeMarkupFromCostSettings(costSettings);
+  return issue ? null : markup;
+}
+
+export type MarkupBenchmark = "excellent" | "good" | "medium" | "high";
+
+/**
+ * Faixas de referência do markup ideal (mesmas da tela de Configurações de
+ * Custos), usadas para colorir o indicador do dashboard: até 3,0 excelente,
+ * acima de 3,0 bom, acima de 3,5 médio, acima de 4,0 alto.
+ */
+export function getMarkupBenchmark(markup: number): MarkupBenchmark {
+  if (markup <= 3.0) return "excellent";
+  if (markup <= 3.5) return "good";
+  if (markup <= 4.0) return "medium";
+  return "high";
+}
+
 export type CostSettingsSummary = {
   fixedCostsTotal: number;
   /** Fração (ex: 0.1 para 10%) da soma de taxa de cartão + embalagem + entrega grátis. */
@@ -136,6 +198,8 @@ export type CostSettingsSummary = {
   totalCostsValue: number | null;
   /** (fixedPct + variablePct) em %, mesma fração usada no divisor do markup em computeRecipePricing. */
   totalCostsPct: number;
+  /** true quando o faturamento médio informado é menor que os custos fixos + variáveis — o markup não fecha (veja computeRecipePricing). */
+  revenueBelowFixedCosts: boolean;
 };
 
 /**
@@ -154,6 +218,7 @@ export function computeCostSettingsSummary(
       hasRevenueEstimate: false,
       totalCostsValue: null,
       totalCostsPct: 0,
+      revenueBelowFixedCosts: false,
     };
   }
 
@@ -179,6 +244,7 @@ export function computeCostSettingsSummary(
     hasRevenueEstimate,
     totalCostsValue,
     totalCostsPct: (fixedPct + variablePct) * 100,
+    revenueBelowFixedCosts: hasRevenueEstimate && fixedPct + variablePct >= 1,
   };
 }
 

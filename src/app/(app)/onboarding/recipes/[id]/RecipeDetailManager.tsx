@@ -16,6 +16,7 @@ import {
   computePriceMetrics,
   computeRecipePricing,
   getPracticedPriceStatus,
+  REVENUE_BELOW_FIXED_COSTS_WARNING,
   type PracticedPriceStatus,
 } from "@/lib/pricing";
 import type { CostSettings, Recipe, RecipeIngredient } from "@/lib/types/database";
@@ -320,6 +321,9 @@ export function RecipeDetailManager({
         )}
         {pricing.issue === "invalid_loss" && (
           <p className="text-sm text-red-600">A % de perda precisa ser menor que 100%.</p>
+        )}
+        {pricing.issue === "revenue_below_fixed_costs" && (
+          <p className="text-sm text-red-600">{REVENUE_BELOW_FIXED_COSTS_WARNING}</p>
         )}
         {pricing.warning && (
           <p className="text-sm text-amber-600 dark:text-amber-500">{pricing.warning}</p>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CostSettingsForm } from "./CostSettingsForm";
+import { computeCostSettingsSummary, REVENUE_BELOW_FIXED_COSTS_WARNING } from "@/lib/pricing";
 import type { CostSettingsInput } from "@/lib/validation/cost-settings";
 
 export default async function OnboardingPage() {
@@ -29,6 +30,8 @@ export default async function OnboardingPage() {
     avg_monthly_revenue: costSettings?.avg_monthly_revenue ?? null,
   };
 
+  const costSummary = computeCostSettingsSummary(costSettings ?? null);
+
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
       <div>
@@ -37,6 +40,12 @@ export default async function OnboardingPage() {
           Esses dados servem de base para calcular o preço ideal dos seus pratos.
         </p>
       </div>
+
+      {costSummary.revenueBelowFixedCosts && (
+        <p className="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+          {REVENUE_BELOW_FIXED_COSTS_WARNING}
+        </p>
+      )}
 
       <CostSettingsForm defaultValues={defaultValues} />
 

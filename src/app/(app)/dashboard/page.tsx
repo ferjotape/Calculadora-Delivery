@@ -6,9 +6,12 @@ import { formatCurrency, formatNumber } from "@/lib/format";
 import {
   aggregateRecipeCosts,
   computeCostSettingsSummary,
+  computeCurrentMarkup,
   computePriceMetrics,
   computeRecipePricing,
+  getMarkupBenchmark,
   getPracticedPriceStatus,
+  type MarkupBenchmark,
   type PracticedPriceStatus,
 } from "@/lib/pricing";
 import { getSubscriptionStatus } from "@/lib/subscription";
@@ -92,6 +95,8 @@ export default async function DashboardPage() {
   });
 
   const costSummary = computeCostSettingsSummary(costSettings ?? null);
+  const currentMarkup = computeCurrentMarkup(costSettings ?? null);
+  const markupBenchmark = currentMarkup !== null ? getMarkupBenchmark(currentMarkup) : null;
 
   const totalRecipes = dashboardRecipes.length;
   const profitValues = dashboardRecipes
@@ -112,7 +117,7 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <section className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <ResumoCard
           icon={<RecipeBookIcon className="h-5 w-5" />}
           label="Receitas cadastradas"
@@ -131,6 +136,21 @@ export default async function DashboardPage() {
           icon={<PercentIcon className="h-5 w-5" />}
           label="Custos totais (%)"
           value={`${formatNumber(costSummary.totalCostsPct, { maximumFractionDigits: 1 })}%`}
+        />
+        <ResumoCard
+          icon={<GaugeIcon className="h-5 w-5" />}
+          label="Markup atual"
+          value={
+            currentMarkup !== null
+              ? formatNumber(currentMarkup, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+              : "—"
+          }
+          valueClassName={markupBenchmark ? MARKUP_BENCHMARK_COLOR[markupBenchmark] : undefined}
+          caption={
+            currentMarkup === null
+              ? "Complete as configurações de custo para ver seu markup"
+              : undefined
+          }
         />
       </section>
 
@@ -223,14 +243,25 @@ function SummaryStat({
   );
 }
 
+const MARKUP_BENCHMARK_COLOR: Record<MarkupBenchmark, string> = {
+  excellent: "text-green-600 dark:text-green-500",
+  good: "text-green-600 dark:text-green-500",
+  medium: "text-amber-600 dark:text-amber-500",
+  high: "text-red-600 dark:text-red-500",
+};
+
 function ResumoCard({
   icon,
   label,
   value,
+  valueClassName,
+  caption,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
+  valueClassName?: string;
+  caption?: string;
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-md border border-neutral-300 p-4 dark:border-neutral-700">
@@ -238,8 +269,11 @@ function ResumoCard({
         {icon}
       </span>
       <div>
-        <p className="font-mono text-xl font-semibold sm:text-2xl">{value}</p>
+        <p className={`font-mono text-xl font-semibold sm:text-2xl ${valueClassName ?? ""}`}>
+          {value}
+        </p>
         <p className="mt-1 text-xs uppercase tracking-wide text-neutral-500">{label}</p>
+        {caption && <p className="mt-1 text-xs normal-case text-neutral-400">{caption}</p>}
       </div>
     </div>
   );
@@ -280,6 +314,16 @@ function PercentIcon(props: SVGProps<SVGSVGElement>) {
       <path d="M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
       <circle cx="6" cy="6" r="1.8" stroke="currentColor" strokeWidth="1.4" />
       <circle cx="14" cy="14" r="1.8" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  );
+}
+
+function GaugeIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path d="M4 14A6 6 0 0 1 16 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M10 14L13 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="10" cy="14" r="1.3" fill="currentColor" />
     </svg>
   );
 }
