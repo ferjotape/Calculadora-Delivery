@@ -58,7 +58,7 @@ export async function createIngredient(input: IngredientInput): Promise<Ingredie
     return { success: false, error: "Não foi possível adicionar o insumo." };
   }
 
-  revalidatePath("/onboarding/ingredients");
+  revalidatePath("/insumos");
   return { success: true, ingredient: data };
 }
 
@@ -94,7 +94,7 @@ export async function updateIngredient(
     return { success: false, error: "Não foi possível salvar o insumo." };
   }
 
-  revalidatePath("/onboarding/ingredients");
+  revalidatePath("/insumos");
   return { success: true, ingredient: data };
 }
 
@@ -114,6 +114,6 @@ export async function deleteIngredient(id: string): Promise<IngredientActionResu
     return { success: false, error: "Não foi possível remover o insumo." };
   }
 
-  revalidatePath("/onboarding/ingredients");
+  revalidatePath("/insumos");
   return { success: true };
 }

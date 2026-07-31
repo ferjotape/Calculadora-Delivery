@@ -47,6 +47,6 @@ export async function saveCostSettings(
     return { success: false, error: "Não foi possível salvar. Tente novamente." };
   }
 
-  revalidatePath("/onboarding");
+  revalidatePath("/custos");
   return { success: true };
 }

@@ -47,7 +47,7 @@ export async function createPlatform(input: DeliveryPlatformInput): Promise<Plat
     return { success: false, error: "Não foi possível adicionar a plataforma." };
   }
 
-  revalidatePath("/onboarding/platforms");
+  revalidatePath("/plataformas");
   return { success: true, platform: data };
 }
 
@@ -80,7 +80,7 @@ export async function updatePlatform(
     return { success: false, error: "Não foi possível salvar a plataforma." };
   }
 
-  revalidatePath("/onboarding/platforms");
+  revalidatePath("/plataformas");
   return { success: true, platform: data };
 }
 
@@ -105,7 +105,7 @@ export async function setPlatformActive(
     return { success: false, error: "Não foi possível atualizar a plataforma." };
   }
 
-  revalidatePath("/onboarding/platforms");
+  revalidatePath("/plataformas");
   return { success: true, platform: data };
 }
 
@@ -125,6 +125,6 @@ export async function deletePlatform(id: string): Promise<PlatformActionResult> 
     return { success: false, error: "Não foi possível remover a plataforma." };
   }
 
-  revalidatePath("/onboarding/platforms");
+  revalidatePath("/plataformas");
   return { success: true };
 }

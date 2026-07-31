@@ -39,7 +39,7 @@ export default async function IngredientsPage() {
 
       <div className="flex justify-end border-t border-neutral-200 pt-6 dark:border-neutral-800">
         <Link
-          href="/onboarding/recipes"
+          href="/receitas"
           className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-active"
         >
           Continuar

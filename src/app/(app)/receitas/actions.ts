@@ -78,7 +78,7 @@ export async function createRecipe(input: RecipeInput): Promise<RecipeActionResu
     return { success: false, error: "Não foi possível criar a receita." };
   }
 
-  revalidatePath("/onboarding/recipes");
+  revalidatePath("/receitas");
   return { success: true, recipe: data };
 }
 
@@ -113,8 +113,8 @@ export async function updateRecipe(
     return { success: false, error: "Não foi possível salvar a receita." };
   }
 
-  revalidatePath("/onboarding/recipes");
-  revalidatePath(`/onboarding/recipes/${id}`);
+  revalidatePath("/receitas");
+  revalidatePath(`/receitas/${id}`);
   return { success: true, recipe: data };
 }
 
@@ -130,7 +130,7 @@ export async function deleteRecipe(id: string): Promise<RecipeActionResult> {
     return { success: false, error: "Não foi possível remover a receita." };
   }
 
-  revalidatePath("/onboarding/recipes");
+  revalidatePath("/receitas");
   return { success: true };
 }
 
@@ -166,8 +166,8 @@ export async function addRecipeIngredient(
     return { success: false, error: "Não foi possível adicionar o insumo à receita." };
   }
 
-  revalidatePath(`/onboarding/recipes/${recipeId}`);
-  revalidatePath("/onboarding/recipes");
+  revalidatePath(`/receitas/${recipeId}`);
+  revalidatePath("/receitas");
   return { success: true, recipeIngredient: data };
 }
 
@@ -205,8 +205,8 @@ export async function updateRecipeIngredient(
     return { success: false, error: "Não foi possível salvar o insumo da receita." };
   }
 
-  revalidatePath(`/onboarding/recipes/${recipeId}`);
-  revalidatePath("/onboarding/recipes");
+  revalidatePath(`/receitas/${recipeId}`);
+  revalidatePath("/receitas");
   return { success: true, recipeIngredient: data };
 }
 
@@ -233,8 +233,8 @@ export async function removeRecipeIngredient(
     return { success: false, error: "Não foi possível remover o insumo da receita." };
   }
 
-  revalidatePath(`/onboarding/recipes/${recipeId}`);
-  revalidatePath("/onboarding/recipes");
+  revalidatePath(`/receitas/${recipeId}`);
+  revalidatePath("/receitas");
   return { success: true };
 }
 

@@ -33,7 +33,7 @@ export default async function RecipeDetailPage({ params }: Props) {
     .maybeSingle();
 
   if (!recipe) {
-    redirect("/onboarding/recipes");
+    redirect("/receitas");
   }
 
   const { data: recipeIngredients } = await supabase
@@ -63,7 +63,7 @@ export default async function RecipeDetailPage({ params }: Props) {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
       <div>
-        <Link href="/onboarding/recipes" className="text-sm text-neutral-500 hover:underline">
+        <Link href="/receitas" className="text-sm text-neutral-500 hover:underline">
           ← Voltar para receitas
         </Link>
         <h1 className="mt-2 text-2xl">{recipe.name}</h1>

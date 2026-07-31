@@ -5,7 +5,7 @@ import { CostSettingsForm } from "./CostSettingsForm";
 import { computeCostSettingsSummary, REVENUE_BELOW_FIXED_COSTS_WARNING } from "@/lib/pricing";
 import type { CostSettingsInput } from "@/lib/validation/cost-settings";
 
-export default async function OnboardingPage() {
+export default async function CustosPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -51,7 +51,7 @@ export default async function OnboardingPage() {
 
       <div className="flex justify-end border-t border-neutral-200 pt-6 dark:border-neutral-800">
         <Link
-          href="/onboarding/platforms"
+          href="/plataformas"
           className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-active"
         >
           Configurar plataformas de delivery →

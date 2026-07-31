@@ -11,20 +11,20 @@ type AppNavKey = "dashboard" | "recipes" | "ingredients" | "platforms" | "costs"
 
 const NAV_ITEMS: { key: AppNavKey; label: string; href: string; Icon: IconComponent }[] = [
   { key: "dashboard", label: "Dashboard", href: "/dashboard", Icon: DashboardIcon },
-  { key: "recipes", label: "Receitas", href: "/onboarding/recipes", Icon: RecipesIcon },
-  { key: "ingredients", label: "Insumos", href: "/onboarding/ingredients", Icon: IngredientsIcon },
-  { key: "platforms", label: "Plataformas", href: "/onboarding/platforms", Icon: PlatformsIcon },
-  { key: "costs", label: "Custos", href: "/onboarding", Icon: CostsIcon },
+  { key: "recipes", label: "Receitas", href: "/receitas", Icon: RecipesIcon },
+  { key: "ingredients", label: "Insumos", href: "/insumos", Icon: IngredientsIcon },
+  { key: "platforms", label: "Plataformas", href: "/plataformas", Icon: PlatformsIcon },
+  { key: "costs", label: "Custos", href: "/custos", Icon: CostsIcon },
   { key: "billing", label: "Assinatura", href: "/billing", Icon: BillingIcon },
 ];
 
 function getActiveKey(pathname: string): AppNavKey | null {
   if (pathname.startsWith("/dashboard")) return "dashboard";
-  if (pathname.startsWith("/onboarding/recipes")) return "recipes";
-  if (pathname.startsWith("/onboarding/ingredients")) return "ingredients";
-  if (pathname.startsWith("/onboarding/platforms")) return "platforms";
+  if (pathname.startsWith("/receitas")) return "recipes";
+  if (pathname.startsWith("/insumos")) return "ingredients";
+  if (pathname.startsWith("/plataformas")) return "platforms";
   if (pathname.startsWith("/billing")) return "billing";
-  if (pathname === "/onboarding") return "costs";
+  if (pathname === "/custos") return "costs";
   return null;
 }
 

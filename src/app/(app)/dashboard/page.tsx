@@ -157,7 +157,7 @@ export default async function DashboardPage() {
       {!costSettings && (
         <p className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
           Configure seus custos em{" "}
-          <Link href="/onboarding" className="underline">
+          <Link href="/custos" className="underline">
             Configurações de Custos
           </Link>{" "}
           para calcular o preço sugerido das suas receitas.
@@ -178,19 +178,19 @@ export default async function DashboardPage() {
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Link
-          href="/onboarding/recipes"
+          href="/receitas"
           className="rounded-md bg-accent px-4 py-3 text-center text-sm font-medium text-white hover:bg-accent-active"
         >
           + Nova Receita
         </Link>
         <Link
-          href="/onboarding/ingredients"
+          href="/insumos"
           className="rounded-md border border-neutral-300 px-4 py-3 text-center text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
         >
           Insumos
         </Link>
         <Link
-          href="/onboarding/platforms"
+          href="/plataformas"
           className="rounded-md border border-neutral-300 px-4 py-3 text-center text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
         >
           Plataformas
@@ -203,7 +203,7 @@ export default async function DashboardPage() {
         {dashboardRecipes.length === 0 ? (
           <p className="rounded-md border border-dashed border-neutral-300 px-4 py-8 text-center text-sm text-neutral-400 dark:border-neutral-700">
             Nenhuma receita cadastrada ainda.{" "}
-            <Link href="/onboarding/recipes" className="underline">
+            <Link href="/receitas" className="underline">
               Crie sua primeira receita
             </Link>
             .
@@ -333,7 +333,7 @@ function RecipeCard({ recipe }: { recipe: DashboardRecipe }) {
 
   return (
     <Link
-      href={`/onboarding/recipes/${recipe.id}`}
+      href={`/receitas/${recipe.id}`}
       className={`flex flex-col gap-3 rounded-md border p-4 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-900 ${
         isBelow
           ? "border-red-300 dark:border-red-900"

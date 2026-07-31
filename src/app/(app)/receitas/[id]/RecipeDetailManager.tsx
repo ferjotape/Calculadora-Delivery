@@ -313,7 +313,7 @@ export function RecipeDetailManager({
         {pricing.issue === "no_cost_settings" && (
           <p className="text-sm text-amber-600 dark:text-amber-500">
             Configure seus custos em{" "}
-            <Link href="/onboarding" className="underline">
+            <Link href="/custos" className="underline">
               Configurações de Custos
             </Link>{" "}
             para calcular o preço sugerido.
@@ -395,7 +395,7 @@ export function RecipeDetailManager({
         ) : platforms.length === 0 ? (
           <p className="text-sm text-neutral-400">
             Nenhuma plataforma ativa cadastrada.{" "}
-            <Link href="/onboarding/platforms" className="underline">
+            <Link href="/plataformas" className="underline">
               Cadastre suas plataformas de delivery
             </Link>
             .

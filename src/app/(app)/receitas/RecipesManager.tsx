@@ -44,7 +44,7 @@ export function RecipesManager({ initialRecipes }: Props) {
     startTransition(async () => {
       const result = await createRecipe({ name: name.trim(), loss_pct: loss });
       if (result.success && result.recipe) {
-        router.push(`/onboarding/recipes/${result.recipe.id}`);
+        router.push(`/receitas/${result.recipe.id}`);
       } else {
         setPendingAction(null);
         setError(result.error ?? "Erro ao criar receita.");
@@ -138,7 +138,7 @@ export function RecipesManager({ initialRecipes }: Props) {
                 {formatCurrency(recipe.totalCost)}
               </span>
               <Link
-                href={`/onboarding/recipes/${recipe.id}`}
+                href={`/receitas/${recipe.id}`}
                 className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
               >
                 Abrir
