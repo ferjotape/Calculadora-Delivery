@@ -51,7 +51,7 @@ export default async function RecipesPage() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
       <div>
-        <h1 className="text-2xl font-semibold">Minhas receitas</h1>
+        <h1 className="text-2xl">Minhas receitas</h1>
         <p className="mt-1 text-sm text-neutral-500">
           Monte seus pratos a partir dos insumos já cadastrados e acompanhe o custo de cada
           receita.
@@ -63,7 +63,7 @@ export default async function RecipesPage() {
       <div className="flex justify-end border-t border-neutral-200 pt-6 dark:border-neutral-800">
         <Link
           href="/dashboard"
-          className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
+          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-active"
         >
           Continuar
         </Link>

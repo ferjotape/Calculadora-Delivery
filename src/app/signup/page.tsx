@@ -3,19 +3,18 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { signup } from "@/app/auth/actions";
+import { Logo } from "@/components/Logo";
 
 export default function SignupPage() {
   const [state, formAction, pending] = useActionState(signup, { error: null });
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-sm flex-col justify-center gap-6 px-4 py-12">
-      <p className="font-heading text-center text-xs font-bold uppercase tracking-wide text-accent">
-        Precifica Delivery
-      </p>
+      <Logo className="justify-center" markClassName="h-9 w-9" textClassName="text-2xl" />
 
       <div className="rounded-xl border border-neutral-200 p-6 shadow-sm dark:border-neutral-800">
         <div>
-          <h1 className="text-2xl font-semibold">Criar conta</h1>
+          <h1 className="text-2xl">Criar conta</h1>
           <p className="mt-1 text-sm text-neutral-500">
             Comece a precificar os pratos do seu delivery em minutos.
           </p>
@@ -70,7 +69,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={pending}
-            className="mt-2 rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-neutral-900"
+            className="mt-2 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-active disabled:opacity-60"
           >
             {pending ? "Criando conta..." : "Criar conta"}
           </button>

@@ -1,4 +1,4 @@
-Precifica Delivery — SaaS de precificação de cardápio para restaurantes e delivery.
+CUSTTO — SaaS de precificação de cardápio para restaurantes e delivery.
 
 Stack: Next.js (App Router) + Tailwind CSS + Supabase (Postgres, Auth) + Stripe (assinatura) + Vercel (deploy).
 

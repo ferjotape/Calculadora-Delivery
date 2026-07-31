@@ -43,9 +43,9 @@ export default async function BillingPage({ searchParams }: Props) {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-6 sm:py-12">
       <div>
-        <h1 className="text-2xl font-semibold">Minha assinatura</h1>
+        <h1 className="text-2xl">Minha assinatura</h1>
         <p className="mt-1 text-sm text-neutral-500">
-          Acesso ao Precifica Delivery é por assinatura mensal.
+          Acesso ao CUSTTO é por assinatura mensal.
         </p>
       </div>
 
@@ -64,7 +64,7 @@ export default async function BillingPage({ searchParams }: Props) {
         <div className="flex items-center justify-between">
           <span className="text-sm text-neutral-500">Status</span>
           <span
-            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+            className={`rounded-full px-2 py-0.5 font-mono text-xs font-medium ${
               subscription.isActive
                 ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
                 : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
@@ -75,11 +75,11 @@ export default async function BillingPage({ searchParams }: Props) {
         </div>
         <div className="flex items-center justify-between">
           <span className="text-sm text-neutral-500">Renovação</span>
-          <span className="text-sm font-medium">{renewalDate ?? "—"}</span>
+          <span className="font-mono text-sm font-medium">{renewalDate ?? "—"}</span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-sm text-neutral-500">Valor</span>
-          <span className="text-sm font-medium">
+          <span className="font-mono text-sm font-medium">
             {formatCurrency(SUBSCRIPTION_PRICE_BRL_CENTS / 100)}/mês
           </span>
         </div>

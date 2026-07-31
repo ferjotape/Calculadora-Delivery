@@ -16,7 +16,7 @@ export function SubscribeButton({ label, trialNote }: Props) {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-md bg-neutral-900 px-4 py-3 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-neutral-900"
+        className="rounded-md bg-accent px-4 py-3 text-sm font-medium text-white hover:bg-accent-active disabled:opacity-60"
       >
         {pending ? "Redirecionando..." : label}
       </button>

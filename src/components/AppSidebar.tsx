@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type SVGProps } from "react";
 import { logout } from "@/app/auth/actions";
+import { Logo } from "./Logo";
 import { LogoutButton } from "./LogoutButton";
 
 type AppNavKey = "dashboard" | "recipes" | "ingredients" | "platforms" | "costs" | "billing";
@@ -57,9 +58,7 @@ export function AppSidebar() {
     <>
       {/* Desktop: sidebar fixa à esquerda */}
       <aside className="hidden w-60 shrink-0 flex-col border-r border-neutral-200 px-4 py-6 md:flex md:sticky md:top-0 md:h-screen dark:border-neutral-800">
-        <span className="font-heading px-2 text-base font-bold tracking-tight text-accent">
-          Precifica Delivery
-        </span>
+        <Logo className="px-2" />
 
         <nav aria-label="Navegação principal" className="mt-8 flex flex-col gap-1">
           {NAV_ITEMS.map((item) => (
@@ -86,9 +85,7 @@ export function AppSidebar() {
           >
             <MenuIcon className="h-5 w-5" />
           </button>
-          <span className="font-heading text-sm font-bold tracking-tight text-accent">
-            Precifica Delivery
-          </span>
+          <Logo markClassName="h-6 w-6" textClassName="text-base" />
         </div>
         <form action={logout}>
           <LogoutButton />
@@ -116,9 +113,7 @@ export function AppSidebar() {
           }`}
         >
           <div className="flex items-center justify-between px-2">
-            <span className="font-heading text-base font-bold tracking-tight text-accent">
-              Precifica Delivery
-            </span>
+            <Logo />
             <button
               type="button"
               onClick={() => setIsDrawerOpen(false)}
@@ -160,7 +155,7 @@ function SidebarLink({
       aria-current={isActive ? "page" : undefined}
       className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
         isActive
-          ? "bg-accent text-white"
+          ? "bg-neutral-900 text-white dark:bg-white dark:text-neutral-900"
           : "text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-900"
       }`}
     >

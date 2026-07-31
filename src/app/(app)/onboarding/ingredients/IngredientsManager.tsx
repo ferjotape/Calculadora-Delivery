@@ -160,7 +160,7 @@ function NewIngredientForm({
   return (
     <section className="flex flex-col gap-3">
       <div>
-        <h2 className="text-lg font-semibold">Adicionar insumo</h2>
+        <h2 className="text-lg">Adicionar insumo</h2>
         <p className="text-sm text-neutral-500">
           Cadastre o insumo com o valor pago e o volume comprado para calcular o custo unitário
           automaticamente.
@@ -240,7 +240,7 @@ function NewIngredientForm({
         <div className="flex flex-col justify-end lg:col-span-2">
           <p className="text-sm text-neutral-500">
             Custo unitário estimado:{" "}
-            <span className="rounded-md bg-neutral-900 px-2 py-1 text-xs font-semibold text-white dark:bg-white dark:text-neutral-900">
+            <span className="rounded-md bg-neutral-900 px-2 py-1 font-mono text-xs font-semibold text-white dark:bg-white dark:text-neutral-900">
               {preview !== null ? `${formatCurrency(preview)} / ${unit}` : "—"}
             </span>
           </p>
@@ -251,7 +251,7 @@ function NewIngredientForm({
             type="button"
             onClick={submit}
             disabled={isPending}
-            className="w-full rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 sm:w-auto dark:bg-white dark:text-neutral-900"
+            className="w-full rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-active disabled:opacity-60 sm:w-auto"
           >
             {isPending ? "Adicionando..." : "Adicionar insumo"}
           </button>
@@ -390,7 +390,7 @@ function IngredientRow({
               type="button"
               onClick={save}
               disabled={isPending}
-              className="rounded-md bg-neutral-900 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-60 dark:bg-white dark:text-neutral-900"
+              className="rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent-active disabled:opacity-60"
             >
               {isPending ? "Salvando..." : "Salvar"}
             </button>
@@ -412,17 +412,17 @@ function IngredientRow({
     <tr className="border-b border-neutral-200 dark:border-neutral-800">
       <td className="px-3 py-2 text-neutral-400">{ingredient.code ?? "—"}</td>
       <td className="px-3 py-2 font-medium">{ingredient.name}</td>
-      <td className="px-3 py-2">{formatCurrency(ingredient.price_paid)}</td>
-      <td className="px-3 py-2">{formatNumber(ingredient.purchase_volume)}</td>
+      <td className="px-3 py-2 font-mono">{formatCurrency(ingredient.price_paid)}</td>
+      <td className="px-3 py-2 font-mono">{formatNumber(ingredient.purchase_volume)}</td>
       <td className="px-3 py-2 text-neutral-500">{ingredient.unit}</td>
-      <td className="px-3 py-2 text-neutral-500">
+      <td className="px-3 py-2 font-mono text-neutral-500">
         {formatNumber(ingredient.correction_factor, {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
         })}
       </td>
       <td className="px-3 py-2">
-        <span className="rounded-md bg-neutral-900 px-2 py-1 text-xs font-semibold text-white dark:bg-white dark:text-neutral-900">
+        <span className="rounded-md bg-neutral-900 px-2 py-1 font-mono text-xs font-semibold text-white dark:bg-white dark:text-neutral-900">
           {formatCurrency(ingredient.unit_cost)} / {ingredient.unit}
         </span>
       </td>

@@ -91,7 +91,7 @@ function NewPlatformForm({
   return (
     <section className="flex flex-col gap-3">
       <div>
-        <h2 className="text-lg font-semibold">Adicionar plataforma</h2>
+        <h2 className="text-lg">Adicionar plataforma</h2>
         <p className="text-sm text-neutral-500">
           Cadastre as plataformas que você usa e a taxa (%) que cada uma cobra sobre o preço de
           venda.
@@ -143,7 +143,7 @@ function NewPlatformForm({
           type="button"
           onClick={submit}
           disabled={isPending}
-          className="w-full rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-60 sm:w-auto dark:bg-white dark:text-neutral-900"
+          className="w-full rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-active disabled:opacity-60 sm:w-auto"
         >
           {isPending ? "Adicionando..." : "Adicionar"}
         </button>
@@ -252,7 +252,7 @@ function PlatformRow({
             type="button"
             onClick={save}
             disabled={isPending}
-            className="flex-1 rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-60 sm:flex-none dark:bg-white dark:text-neutral-900"
+            className="flex-1 rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-active disabled:opacity-60 sm:flex-none"
           >
             {pendingAction === "save" ? "Salvando..." : "Salvar"}
           </button>

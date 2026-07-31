@@ -66,7 +66,7 @@ export default async function RecipeDetailPage({ params }: Props) {
         <Link href="/onboarding/recipes" className="text-sm text-neutral-500 hover:underline">
           ← Voltar para receitas
         </Link>
-        <h1 className="mt-2 text-2xl font-semibold">{recipe.name}</h1>
+        <h1 className="mt-2 text-2xl">{recipe.name}</h1>
       </div>
 
       <RecipeDetailManager

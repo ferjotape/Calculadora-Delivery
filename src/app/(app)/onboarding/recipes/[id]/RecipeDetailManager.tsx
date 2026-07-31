@@ -167,7 +167,7 @@ export function RecipeDetailManager({
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Detalhes da receita</h2>
+        <h2 className="text-lg">Detalhes da receita</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2">
             <label className="text-sm font-medium">Nome do prato</label>
@@ -228,7 +228,7 @@ export function RecipeDetailManager({
               type="button"
               onClick={saveDetails}
               disabled={isSavingDetails}
-              className="w-full rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 sm:w-auto dark:bg-white dark:text-neutral-900"
+              className="w-full rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-active disabled:opacity-60 sm:w-auto"
             >
               {isSavingDetails ? "Salvando..." : "Salvar"}
             </button>
@@ -240,7 +240,7 @@ export function RecipeDetailManager({
 
       <section className="flex flex-col gap-3">
         <div>
-          <h2 className="text-lg font-semibold">Insumos da receita</h2>
+          <h2 className="text-lg">Insumos da receita</h2>
           <p className="text-sm text-neutral-500">
             Busque um insumo já cadastrado e informe a quantidade líquida usada.
           </p>
@@ -293,7 +293,7 @@ export function RecipeDetailManager({
         <div className="flex justify-end border-t border-neutral-200 pt-4 dark:border-neutral-800">
           <p className="text-sm text-neutral-500">
             Custo total da receita:{" "}
-            <span className="rounded-md bg-neutral-900 px-2 py-1 text-sm font-semibold text-white dark:bg-white dark:text-neutral-900">
+            <span className="rounded-md bg-neutral-900 px-2 py-1 font-mono text-sm font-semibold text-white dark:bg-white dark:text-neutral-900">
               {formatCurrency(totalCost)}
             </span>
           </p>
@@ -302,7 +302,7 @@ export function RecipeDetailManager({
 
       <section className="flex flex-col gap-3 rounded-md border border-neutral-300 p-4 dark:border-neutral-700">
         <div>
-          <h2 className="text-lg font-semibold">Precificação sugerida</h2>
+          <h2 className="text-lg">Precificação sugerida</h2>
           <p className="text-sm text-neutral-500">
             Calculada a partir do custo dos insumos, da % de perda e das Configurações de Custos
             (sem taxa de plataforma).
@@ -378,7 +378,7 @@ export function RecipeDetailManager({
 
       <section className="flex flex-col gap-3">
         <div>
-          <h2 className="text-lg font-semibold">Preço por plataforma</h2>
+          <h2 className="text-lg">Preço por plataforma</h2>
           <p className="text-sm text-neutral-500">
             Preço para que, descontada a taxa de cada plataforma ativa, sobre o preço sugerido.
           </p>
@@ -418,16 +418,18 @@ export function RecipeDetailManager({
                     className="border-b border-neutral-200 last:border-b-0 dark:border-neutral-800"
                   >
                     <td className="px-3 py-2 font-medium">{platform.name}</td>
-                    <td className="px-3 py-2 text-neutral-500">
+                    <td className="px-3 py-2 font-mono text-neutral-500">
                       {formatNumber(platform.fee_pct)}%
                     </td>
-                    <td className="px-3 py-2">{price !== null ? formatCurrency(price) : "—"}</td>
+                    <td className="px-3 py-2 font-mono">
+                      {price !== null ? formatCurrency(price) : "—"}
+                    </td>
                     {discountPctNumber > 0 && (
-                      <td className="px-3 py-2">
+                      <td className="px-3 py-2 font-mono">
                         {priceWithDiscount !== null ? formatCurrency(priceWithDiscount) : "—"}
                       </td>
                     )}
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2 font-mono">
                       {metrics
                         ? `${formatCurrency(metrics.profitValue)} (${formatNumber(
                             metrics.profitPct,
@@ -435,7 +437,7 @@ export function RecipeDetailManager({
                           )}%)`
                         : "—"}
                     </td>
-                    <td className="px-3 py-2 text-neutral-500">
+                    <td className="px-3 py-2 font-mono text-neutral-500">
                       {metrics
                         ? `${formatNumber(metrics.cmvPct, {
                             minimumFractionDigits: 1,
@@ -468,9 +470,7 @@ function Stat({
       <span className="text-xs uppercase tracking-wide text-neutral-500">{label}</span>
       <span
         className={
-          highlight
-            ? "font-heading text-2xl font-bold text-accent"
-            : "text-lg font-medium"
+          highlight ? "font-mono text-2xl font-semibold" : "font-mono text-lg font-medium"
         }
       >
         {value}
@@ -602,7 +602,7 @@ function AddRecipeIngredientForm({
         type="button"
         onClick={submit}
         disabled={isPending}
-        className="rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-neutral-900"
+        className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-active disabled:opacity-60"
       >
         {isPending ? "Adicionando..." : "Adicionar"}
       </button>
@@ -699,7 +699,7 @@ function RecipeItemRow({
             type="button"
             onClick={save}
             disabled={isPending}
-            className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-neutral-900"
+            className="rounded-md bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-active disabled:opacity-60"
           >
             {isPending ? "Salvando..." : "Salvar"}
           </button>
@@ -728,7 +728,7 @@ function RecipeItemRow({
         </p>
       </div>
       <div className="flex items-center gap-2">
-        <span className="rounded-md bg-neutral-100 px-2 py-1 text-xs font-semibold text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+        <span className="rounded-md bg-neutral-100 px-2 py-1 font-mono text-xs font-semibold text-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
           {formatCurrency(lineCost)}
         </span>
         <button

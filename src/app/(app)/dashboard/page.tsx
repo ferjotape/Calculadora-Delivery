@@ -106,7 +106,7 @@ export default async function DashboardPage() {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
       <div>
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <h1 className="text-2xl">Dashboard</h1>
         <p className="mt-1 text-sm text-neutral-500">
           Visão geral da precificação do seu cardápio.
         </p>
@@ -159,7 +159,7 @@ export default async function DashboardPage() {
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Link
           href="/onboarding/recipes"
-          className="rounded-md bg-neutral-900 px-4 py-3 text-center text-sm font-medium text-white dark:bg-white dark:text-neutral-900"
+          className="rounded-md bg-accent px-4 py-3 text-center text-sm font-medium text-white hover:bg-accent-active"
         >
           + Nova Receita
         </Link>
@@ -178,7 +178,7 @@ export default async function DashboardPage() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Minhas receitas</h2>
+        <h2 className="text-lg">Minhas receitas</h2>
 
         {dashboardRecipes.length === 0 ? (
           <p className="rounded-md border border-dashed border-neutral-300 px-4 py-8 text-center text-sm text-neutral-400 dark:border-neutral-700">
@@ -213,7 +213,7 @@ function SummaryStat({
     <div className="rounded-md border border-neutral-300 p-4 dark:border-neutral-700">
       <p className="text-xs uppercase tracking-wide text-neutral-500">{label}</p>
       <p
-        className={`mt-1 text-2xl font-semibold ${
+        className={`mt-1 font-mono text-2xl font-semibold ${
           highlight ? "text-red-600 dark:text-red-500" : ""
         }`}
       >
@@ -234,11 +234,11 @@ function ResumoCard({
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-md border border-neutral-300 p-4 dark:border-neutral-700">
-      <span className="flex h-9 w-9 items-center justify-center rounded-md bg-accent/10 text-accent">
+      <span className="flex h-9 w-9 items-center justify-center rounded-md bg-neutral-100 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100">
         {icon}
       </span>
       <div>
-        <p className="font-heading text-xl font-bold sm:text-2xl">{value}</p>
+        <p className="font-mono text-xl font-semibold sm:text-2xl">{value}</p>
         <p className="mt-1 text-xs uppercase tracking-wide text-neutral-500">{label}</p>
       </div>
     </div>
@@ -308,25 +308,27 @@ function RecipeCard({ recipe }: { recipe: DashboardRecipe }) {
       <dl className="grid grid-cols-2 gap-3 text-sm">
         <div>
           <dt className="text-xs text-neutral-500">Custo</dt>
-          <dd>{formatCurrency(recipe.cost)}</dd>
+          <dd className="font-mono">{formatCurrency(recipe.cost)}</dd>
         </div>
         <div>
           <dt className="text-xs text-neutral-500">Preço sugerido</dt>
-          <dd className="font-heading font-bold text-accent">
+          <dd className="font-mono font-semibold">
             {recipe.suggestedPrice !== null ? formatCurrency(recipe.suggestedPrice) : "—"}
           </dd>
         </div>
         <div>
           <dt className="text-xs text-neutral-500">Preço praticado</dt>
-          <dd>{recipe.practicedPrice !== null ? formatCurrency(recipe.practicedPrice) : "—"}</dd>
+          <dd className="font-mono">
+            {recipe.practicedPrice !== null ? formatCurrency(recipe.practicedPrice) : "—"}
+          </dd>
         </div>
         <div>
           <dt className="text-xs text-neutral-500">Lucro</dt>
           <dd
             className={
               recipe.profitPct !== null && recipe.profitPct < 0
-                ? "font-medium text-red-600 dark:text-red-500"
-                : "font-medium"
+                ? "font-mono font-medium text-red-600 dark:text-red-500"
+                : "font-mono font-medium"
             }
           >
             {recipe.profitPct !== null

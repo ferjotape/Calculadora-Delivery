@@ -32,7 +32,7 @@ export default async function OnboardingPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
       <div>
-        <h1 className="text-2xl font-semibold">Configurações de custos</h1>
+        <h1 className="text-2xl">Configurações de custos</h1>
         <p className="mt-1 text-sm text-neutral-500">
           Esses dados servem de base para calcular o preço ideal dos seus pratos.
         </p>
@@ -43,7 +43,7 @@ export default async function OnboardingPage() {
       <div className="flex justify-end border-t border-neutral-200 pt-6 dark:border-neutral-800">
         <Link
           href="/onboarding/platforms"
-          className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
+          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-active"
         >
           Configurar plataformas de delivery →
         </Link>

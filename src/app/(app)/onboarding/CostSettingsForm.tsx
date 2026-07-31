@@ -54,7 +54,7 @@ export function CostSettingsForm({ defaultValues }: Props) {
       {/* Custos fixos */}
       <section className="flex flex-col gap-3">
         <div>
-          <h2 className="text-lg font-semibold">Custos fixos</h2>
+          <h2 className="text-lg">Custos fixos</h2>
           <p className="text-sm text-neutral-500">
             Aluguel, salários, contas... adicione quantos itens precisar.
           </p>
@@ -117,7 +117,7 @@ export function CostSettingsForm({ defaultValues }: Props) {
       {/* Custos variáveis */}
       <section className="flex flex-col gap-3">
         <div>
-          <h2 className="text-lg font-semibold">Custos variáveis</h2>
+          <h2 className="text-lg">Custos variáveis</h2>
           <p className="text-sm text-neutral-500">Percentuais aplicados sobre o preço de venda.</p>
         </div>
 
@@ -146,7 +146,7 @@ export function CostSettingsForm({ defaultValues }: Props) {
       {/* Lucro desejado */}
       <section className="flex flex-col gap-3">
         <div>
-          <h2 className="text-lg font-semibold">Lucro desejado</h2>
+          <h2 className="text-lg">Lucro desejado</h2>
           <p className="text-sm text-neutral-500">
             Base para o cálculo do markup ideal do seu cardápio.
           </p>
@@ -194,7 +194,7 @@ export function CostSettingsForm({ defaultValues }: Props) {
       <button
         type="submit"
         disabled={isPending}
-        className="self-start rounded-md bg-neutral-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60 dark:bg-white dark:text-neutral-900"
+        className="self-start rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-active disabled:opacity-60"
       >
         {isPending ? "Salvando..." : "Salvar configurações"}
       </button>
