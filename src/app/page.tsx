@@ -1,5 +1,399 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import type { SVGProps } from "react";
+import { Logo } from "@/components/Logo";
+import { formatCurrency } from "@/lib/format";
+import { SUBSCRIPTION_PRICE_BRL_CENTS, SUBSCRIPTION_TRIAL_DAYS } from "@/lib/stripe/plan";
 
-export default function Home() {
-  redirect("/dashboard");
+const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5511999999999";
+const WHATSAPP_MESSAGE = "Olá, quero tirar dúvidas sobre o CUSTTO";
+const WHATSAPP_HREF = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+
+const title = "CUSTTO — Descubra se seu prato tá dando prejuízo";
+const description =
+  "Pare de precificar no chute. O CUSTTO calcula o preço ideal de cada prato do seu delivery — com custo de insumo, taxa de plataforma (iFood, 99Food, Keeta) e desconto considerados automaticamente. Teste grátis por 7 dias.";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    type: "website",
+    locale: "pt_BR",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+  },
+};
+
+export default function LandingPage() {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <LandingHeader />
+      <main>
+        <Hero />
+        <PainSection />
+        <HowItWorksSection />
+        <PricingSection />
+        <FaqSection />
+        <FinalCtaSection />
+      </main>
+      <LandingFooter />
+      <WhatsAppFloatingButton />
+    </div>
+  );
+}
+
+function LandingHeader() {
+  return (
+    <header className="flex items-center justify-between px-4 py-4 sm:px-6">
+      <Logo markClassName="h-7 w-7" textClassName="text-lg" />
+      <Link
+        href="/login"
+        className="text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
+      >
+        Entrar
+      </Link>
+    </header>
+  );
+}
+
+function Hero() {
+  return (
+    <section className="px-4 py-12 sm:px-6 sm:py-20">
+      <div className="mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
+        <h1 className="text-3xl leading-tight sm:text-5xl">
+          Descubra se seu prato <span className="text-accent">tá dando prejuízo.</span>
+        </h1>
+        <p className="max-w-xl text-base text-neutral-600 sm:text-lg dark:text-neutral-300">
+          Some seus custos, insumos e taxas de cada plataforma de delivery — e receba o preço
+          certo pra cada prato do seu cardápio, sem chute e sem planilha.
+        </p>
+
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+          <Link
+            href="/signup"
+            className="rounded-md bg-accent px-6 py-3 text-center text-base font-medium text-white hover:bg-accent-active"
+          >
+            Testar grátis por 7 dias
+          </Link>
+          <a
+            href={WHATSAPP_HREF}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 rounded-md border border-neutral-300 px-6 py-3 text-center text-base font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
+          >
+            <WhatsAppIcon className="h-5 w-5 shrink-0" />
+            Tirar dúvidas
+          </a>
+        </div>
+
+        <p className="text-xs text-neutral-400">
+          Sem cartão de crédito pra começar · Cancele quando quiser
+        </p>
+      </div>
+    </section>
+  );
+}
+
+const PAIN_POINTS = [
+  {
+    title: "Você não sabe se tá tendo lucro de verdade",
+    description:
+      "Sem separar custo fixo, custo variável e taxa de plataforma, é impossível saber quanto sobra de cada venda — só no fim do mês, quando já é tarde.",
+  },
+  {
+    title: "Preço copiado do concorrente, sem considerar seus custos",
+    description:
+      "O prato do vizinho pode ter aluguel, insumo e estrutura completamente diferentes da sua. Copiar o preço é copiar o prejuízo dele.",
+  },
+  {
+    title: "A taxa da plataforma come sua margem sem perceber",
+    description:
+      "iFood, 99Food, Keeta... cada uma cobra um percentual diferente. Se o preço não for ajustado por plataforma, a conta não fecha.",
+  },
+];
+
+function PainSection() {
+  return (
+    <section className="bg-neutral-100 px-4 py-14 sm:px-6 sm:py-20 dark:bg-neutral-900">
+      <div className="mx-auto flex max-w-4xl flex-col gap-8">
+        <div className="text-center">
+          <p className="font-mono text-xs uppercase tracking-wide text-accent">O problema</p>
+          <h2 className="mt-2 text-2xl sm:text-3xl">Precificar no olho sai caro</h2>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {PAIN_POINTS.map((pain) => (
+            <div
+              key={pain.title}
+              className="flex flex-col gap-2 rounded-md border border-neutral-300 bg-background p-5 dark:border-neutral-700"
+            >
+              <h3 className="font-medium">{pain.title}</h3>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">{pain.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const STEPS = [
+  {
+    title: "Cadastre seus custos",
+    description: "Custos fixos, variáveis e o lucro que você quer ter em cada venda.",
+  },
+  {
+    title: "Cadastre seus insumos",
+    description: "Preço pago, volume comprado e fator de correção — o custo unitário sai sozinho.",
+  },
+  {
+    title: "Monte suas receitas",
+    description: "Some os insumos de cada prato e o sistema calcula o custo total automaticamente.",
+  },
+  {
+    title: "Receba o preço ideal",
+    description: "Preço sugerido, por plataforma de delivery, com desconto e cupom simulados.",
+  },
+];
+
+function HowItWorksSection() {
+  return (
+    <section className="px-4 py-14 sm:px-6 sm:py-20">
+      <div className="mx-auto flex max-w-4xl flex-col gap-10">
+        <div className="text-center">
+          <p className="font-mono text-xs uppercase tracking-wide text-accent">Como funciona</p>
+          <h2 className="mt-2 text-2xl sm:text-3xl">Do custo ao preço certo em 4 passos</h2>
+        </div>
+
+        <ol className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {STEPS.map((step, index) => (
+            <li
+              key={step.title}
+              className="flex gap-4 rounded-md border border-neutral-300 p-5 dark:border-neutral-700"
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 font-mono text-sm font-semibold text-white dark:bg-white dark:text-neutral-900">
+                {index + 1}
+              </span>
+              <div>
+                <h3 className="font-medium">{step.title}</h3>
+                <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+                  {step.description}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+
+        <div className="overflow-hidden rounded-xl border border-neutral-300 dark:border-neutral-700">
+          <Image
+            src="/landing/dashboard-preview.png"
+            alt="Dashboard do CUSTTO mostrando receitas cadastradas, custos totais, markup atual e o preço de cada prato"
+            width={800}
+            height={482}
+            className="w-full"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const PRICING_FEATURES = [
+  "Custos fixos e variáveis ilimitados",
+  "Insumos e receitas ilimitados",
+  "Preço ajustado por plataforma (iFood, 99Food, Keeta e outras)",
+  "Simulação de desconto e cupom",
+  "Indicador de markup e margem em tempo real",
+];
+
+function PricingSection() {
+  const priceLabel = formatCurrency(SUBSCRIPTION_PRICE_BRL_CENTS / 100);
+
+  return (
+    <section className="bg-neutral-100 px-4 py-14 sm:px-6 sm:py-20 dark:bg-neutral-900">
+      <div className="mx-auto flex max-w-md flex-col gap-8">
+        <div className="text-center">
+          <p className="font-mono text-xs uppercase tracking-wide text-accent">Preço</p>
+          <h2 className="mt-2 text-2xl sm:text-3xl">Um plano. Sem pegadinha.</h2>
+        </div>
+
+        <div className="flex flex-col gap-6 rounded-xl border border-neutral-300 bg-background p-6 sm:p-8 dark:border-neutral-700">
+          <div className="text-center">
+            <p className="font-mono text-4xl font-semibold sm:text-5xl">
+              {priceLabel}
+              <span className="text-lg font-normal text-neutral-500">/mês</span>
+            </p>
+            <p className="mt-2 text-sm text-neutral-500">
+              {SUBSCRIPTION_TRIAL_DAYS} dias grátis, cancele quando quiser
+            </p>
+          </div>
+
+          <ul className="flex flex-col gap-3">
+            {PRICING_FEATURES.map((feature) => (
+              <li key={feature} className="flex items-start gap-2 text-sm">
+                <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+
+          <Link
+            href="/signup"
+            className="rounded-md bg-accent px-6 py-3 text-center text-base font-medium text-white hover:bg-accent-active"
+          >
+            Começar agora
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const FAQ_ITEMS = [
+  {
+    question: "Preciso saber usar planilha?",
+    answer:
+      "Não. O CUSTTO substitui a planilha: você só cadastra os números uma vez e o sistema calcula tudo sozinho, sempre que você mexer em custo, insumo ou receita.",
+  },
+  {
+    question: "Funciona pro meu tipo de negócio?",
+    answer:
+      "Funciona pra qualquer restaurante ou operação de delivery que venda pratos com ingredientes — hamburgueria, marmitaria, pizzaria, confeitaria, esfiharia, entre outros.",
+  },
+  {
+    question: "Como funciona o teste grátis?",
+    answer: `Você usa o CUSTTO completo por ${SUBSCRIPTION_TRIAL_DAYS} dias sem pagar nada. A cobrança só começa depois do período de teste, e você pode cancelar antes disso sem custo.`,
+  },
+  {
+    question: "Posso cancelar quando quiser?",
+    answer: "Sim, direto pela sua conta, sem multa e sem precisar falar com ninguém.",
+  },
+  {
+    question: "Preciso instalar alguma coisa?",
+    answer: "Não. O CUSTTO funciona direto no navegador, no computador ou no celular.",
+  },
+];
+
+function FaqSection() {
+  return (
+    <section className="px-4 py-14 sm:px-6 sm:py-20">
+      <div className="mx-auto flex max-w-2xl flex-col gap-8">
+        <div className="text-center">
+          <p className="font-mono text-xs uppercase tracking-wide text-accent">Dúvidas</p>
+          <h2 className="mt-2 text-2xl sm:text-3xl">Perguntas frequentes</h2>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          {FAQ_ITEMS.map((item) => (
+            <details
+              key={item.question}
+              className="group rounded-md border border-neutral-300 p-4 dark:border-neutral-700"
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium marker:content-none [&::-webkit-details-marker]:hidden">
+                {item.question}
+                <ChevronIcon className="h-4 w-4 shrink-0 text-neutral-400 transition-transform group-open:rotate-180" />
+              </summary>
+              <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400">{item.answer}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FinalCtaSection() {
+  return (
+    <section className="bg-neutral-900 px-4 py-14 text-white sm:px-6 sm:py-20">
+      <div className="mx-auto flex max-w-xl flex-col items-center gap-6 text-center">
+        <h2 className="text-2xl sm:text-3xl">Pare de perder dinheiro em cada prato.</h2>
+        <p className="text-neutral-300">
+          Teste o CUSTTO grátis por {SUBSCRIPTION_TRIAL_DAYS} dias e descubra o preço certo do seu
+          cardápio hoje mesmo.
+        </p>
+        <Link
+          href="/signup"
+          className="rounded-md bg-accent px-6 py-3 text-base font-medium text-white hover:bg-accent-active"
+        >
+          Testar grátis por 7 dias
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+function LandingFooter() {
+  return (
+    <footer className="flex flex-col items-center gap-3 px-4 py-10 text-center sm:px-6">
+      <Logo markClassName="h-6 w-6" textClassName="text-base" />
+      <p className="text-sm text-neutral-500">
+        Ainda com dúvidas?{" "}
+        <a
+          href={WHATSAPP_HREF}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium text-neutral-900 underline dark:text-white"
+        >
+          Fale com a gente
+        </a>
+      </p>
+      <p className="text-xs text-neutral-400">© {new Date().getFullYear()} CUSTTO</p>
+    </footer>
+  );
+}
+
+function WhatsAppFloatingButton() {
+  return (
+    <a
+      href={WHATSAPP_HREF}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="Falar no WhatsApp"
+      className="whatsapp-pulse fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-105"
+    >
+      <WhatsAppIcon className="h-7 w-7" />
+    </a>
+  );
+}
+
+function WhatsAppIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.39 1.26 4.81L2 22l5.42-1.35a9.9 9.9 0 0 0 4.62 1.15h.01c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2Zm5.83 14.06c-.24.68-1.4 1.32-1.94 1.4-.5.08-1.13.11-1.82-.11-.42-.13-.96-.31-1.65-.61-2.91-1.26-4.8-4.19-4.95-4.38-.15-.2-1.18-1.57-1.18-3 0-1.42.75-2.12 1.02-2.41.26-.28.57-.36.76-.36.19 0 .38 0 .55.01.18.01.42-.07.65.5.24.58.81 2 .88 2.14.07.15.12.32.02.51-.1.2-.15.32-.29.5-.15.17-.31.39-.44.52-.15.15-.3.31-.13.6.17.29.75 1.24 1.62 2.01 1.12.99 2.05 1.3 2.34 1.45.29.15.46.13.63-.05.17-.19.72-.84.92-1.13.19-.29.39-.24.65-.14.27.1 1.68.79 1.97.94.29.14.48.21.55.33.07.13.07.72-.17 1.4Z" />
+    </svg>
+  );
+}
+
+function CheckIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        d="M4 10.5L8 14.5L16 6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ChevronIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        d="M5 7.5L10 12.5L15 7.5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
 }
