@@ -11,10 +11,10 @@ type AppNavKey = "dashboard" | "recipes" | "ingredients" | "platforms" | "costs"
 
 const NAV_ITEMS: { key: AppNavKey; label: string; href: string; Icon: IconComponent }[] = [
   { key: "dashboard", label: "Dashboard", href: "/dashboard", Icon: DashboardIcon },
-  { key: "recipes", label: "Receitas", href: "/receitas", Icon: RecipesIcon },
-  { key: "ingredients", label: "Insumos", href: "/insumos", Icon: IngredientsIcon },
-  { key: "platforms", label: "Plataformas", href: "/plataformas", Icon: PlatformsIcon },
   { key: "costs", label: "Custos", href: "/custos", Icon: CostsIcon },
+  { key: "ingredients", label: "Insumos", href: "/insumos", Icon: IngredientsIcon },
+  { key: "recipes", label: "Receitas", href: "/receitas", Icon: RecipesIcon },
+  { key: "platforms", label: "Plataformas", href: "/plataformas", Icon: PlatformsIcon },
   { key: "billing", label: "Assinatura", href: "/billing", Icon: BillingIcon },
 ];
 

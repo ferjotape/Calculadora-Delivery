@@ -6,6 +6,8 @@ export type FixedCost = {
 export type Profile = {
   id: string;
   restaurant_name: string | null;
+  email: string | null;
+  is_admin: boolean;
   created_at: string;
 };
 
