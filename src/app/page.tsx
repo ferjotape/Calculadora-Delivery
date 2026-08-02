@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { SVGProps } from "react";
 import { Logo } from "@/components/Logo";
+import { Reveal } from "@/components/Reveal";
 import { formatCurrency } from "@/lib/format";
 import { SUBSCRIPTION_PRICE_BRL_CENTS, SUBSCRIPTION_TRIAL_DAYS } from "@/lib/stripe/plan";
 
@@ -66,18 +67,24 @@ function Hero() {
   return (
     <section className="px-4 py-12 sm:px-6 sm:py-20">
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-6 text-center">
-        <h1 className="text-3xl leading-tight sm:text-5xl">
+        <h1 className="hero-fade-up text-3xl leading-tight sm:text-5xl">
           Descubra se seu prato <span className="text-accent">tá dando prejuízo.</span>
         </h1>
-        <p className="max-w-xl text-base text-neutral-600 sm:text-lg dark:text-neutral-300">
+        <p
+          className="hero-fade-up max-w-xl text-base text-neutral-600 sm:text-lg dark:text-neutral-300"
+          style={{ animationDelay: "90ms" }}
+        >
           Some seus custos, insumos e taxas de cada plataforma de delivery — e receba o preço
           certo pra cada prato do seu cardápio, sem chute e sem planilha.
         </p>
 
-        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+        <div
+          className="hero-fade-up flex w-full flex-col gap-3 sm:w-auto sm:flex-row"
+          style={{ animationDelay: "180ms" }}
+        >
           <Link
             href="/signup"
-            className="rounded-md bg-accent px-6 py-3 text-center text-base font-medium text-white hover:bg-accent-active"
+            className="rounded-md bg-accent px-6 py-3 text-center text-base font-medium text-white transition-colors hover:bg-accent-active"
           >
             Testar grátis por 7 dias
           </Link>
@@ -85,14 +92,14 @@ function Hero() {
             href={WHATSAPP_HREF}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 rounded-md border border-neutral-300 px-6 py-3 text-center text-base font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
+            className="flex items-center justify-center gap-2 rounded-md border border-neutral-300 px-6 py-3 text-center text-base font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
           >
             <WhatsAppIcon className="h-5 w-5 shrink-0" />
             Tirar dúvidas
           </a>
         </div>
 
-        <p className="text-xs text-neutral-400">
+        <p className="hero-fade-up text-xs text-neutral-400" style={{ animationDelay: "260ms" }}>
           Sem cartão de crédito pra começar · Cancele quando quiser
         </p>
       </div>
@@ -122,20 +129,21 @@ function PainSection() {
   return (
     <section className="bg-neutral-100 px-4 py-14 sm:px-6 sm:py-20 dark:bg-neutral-900">
       <div className="mx-auto flex max-w-4xl flex-col gap-8">
-        <div className="text-center">
+        <Reveal className="text-center">
           <p className="font-mono text-xs uppercase tracking-wide text-accent">O problema</p>
           <h2 className="mt-2 text-2xl sm:text-3xl">Precificar no olho sai caro</h2>
-        </div>
+        </Reveal>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {PAIN_POINTS.map((pain) => (
-            <div
-              key={pain.title}
-              className="flex flex-col gap-2 rounded-md border border-neutral-300 bg-background p-5 dark:border-neutral-700"
-            >
-              <h3 className="font-medium">{pain.title}</h3>
-              <p className="text-sm text-neutral-600 dark:text-neutral-400">{pain.description}</p>
-            </div>
+          {PAIN_POINTS.map((pain, index) => (
+            <Reveal key={pain.title} delayMs={index * 80}>
+              <div className="flex h-full flex-col gap-2 rounded-md border border-neutral-300 bg-background p-5 dark:border-neutral-700">
+                <h3 className="font-medium">{pain.title}</h3>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  {pain.description}
+                </p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -166,15 +174,17 @@ function HowItWorksSection() {
   return (
     <section className="px-4 py-14 sm:px-6 sm:py-20">
       <div className="mx-auto flex max-w-4xl flex-col gap-10">
-        <div className="text-center">
+        <Reveal className="text-center">
           <p className="font-mono text-xs uppercase tracking-wide text-accent">Como funciona</p>
           <h2 className="mt-2 text-2xl sm:text-3xl">Do custo ao preço certo em 4 passos</h2>
-        </div>
+        </Reveal>
 
         <ol className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {STEPS.map((step, index) => (
-            <li
+            <Reveal
               key={step.title}
+              as="li"
+              delayMs={index * 80}
               className="flex gap-4 rounded-md border border-neutral-300 p-5 dark:border-neutral-700"
             >
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 font-mono text-sm font-semibold text-white dark:bg-white dark:text-neutral-900">
@@ -186,11 +196,11 @@ function HowItWorksSection() {
                   {step.description}
                 </p>
               </div>
-            </li>
+            </Reveal>
           ))}
         </ol>
 
-        <div className="overflow-hidden rounded-xl border border-neutral-300 dark:border-neutral-700">
+        <Reveal variant="scale" className="overflow-hidden rounded-xl border border-neutral-300 dark:border-neutral-700">
           <Image
             src="/landing/dashboard-preview.png"
             alt="Dashboard do CUSTTO mostrando receitas cadastradas, custos totais, markup atual e o preço de cada prato"
@@ -198,7 +208,7 @@ function HowItWorksSection() {
             height={482}
             className="w-full"
           />
-        </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -218,12 +228,15 @@ function PricingSection() {
   return (
     <section className="bg-neutral-100 px-4 py-14 sm:px-6 sm:py-20 dark:bg-neutral-900">
       <div className="mx-auto flex max-w-md flex-col gap-8">
-        <div className="text-center">
+        <Reveal className="text-center">
           <p className="font-mono text-xs uppercase tracking-wide text-accent">Preço</p>
           <h2 className="mt-2 text-2xl sm:text-3xl">Um plano. Sem pegadinha.</h2>
-        </div>
+        </Reveal>
 
-        <div className="flex flex-col gap-6 rounded-xl border border-neutral-300 bg-background p-6 sm:p-8 dark:border-neutral-700">
+        <Reveal
+          delayMs={80}
+          className="flex flex-col gap-6 rounded-xl border border-neutral-300 bg-background p-6 sm:p-8 dark:border-neutral-700"
+        >
           <div className="text-center">
             <p className="font-mono text-4xl font-semibold sm:text-5xl">
               {priceLabel}
@@ -245,11 +258,11 @@ function PricingSection() {
 
           <Link
             href="/signup"
-            className="rounded-md bg-accent px-6 py-3 text-center text-base font-medium text-white hover:bg-accent-active"
+            className="rounded-md bg-accent px-6 py-3 text-center text-base font-medium text-white transition-colors hover:bg-accent-active"
           >
             Começar agora
           </Link>
-        </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -284,23 +297,24 @@ function FaqSection() {
   return (
     <section className="px-4 py-14 sm:px-6 sm:py-20">
       <div className="mx-auto flex max-w-2xl flex-col gap-8">
-        <div className="text-center">
+        <Reveal className="text-center">
           <p className="font-mono text-xs uppercase tracking-wide text-accent">Dúvidas</p>
           <h2 className="mt-2 text-2xl sm:text-3xl">Perguntas frequentes</h2>
-        </div>
+        </Reveal>
 
         <div className="flex flex-col gap-3">
-          {FAQ_ITEMS.map((item) => (
-            <details
-              key={item.question}
-              className="group rounded-md border border-neutral-300 p-4 dark:border-neutral-700"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium marker:content-none [&::-webkit-details-marker]:hidden">
-                {item.question}
-                <ChevronIcon className="h-4 w-4 shrink-0 text-neutral-400 transition-transform group-open:rotate-180" />
-              </summary>
-              <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400">{item.answer}</p>
-            </details>
+          {FAQ_ITEMS.map((item, index) => (
+            <Reveal key={item.question} delayMs={Math.min(index, 4) * 60}>
+              <details className="group rounded-md border border-neutral-300 p-4 dark:border-neutral-700">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium marker:content-none [&::-webkit-details-marker]:hidden">
+                  {item.question}
+                  <ChevronIcon className="h-4 w-4 shrink-0 text-neutral-400 transition-transform group-open:rotate-180" />
+                </summary>
+                <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400">
+                  {item.answer}
+                </p>
+              </details>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -311,7 +325,7 @@ function FaqSection() {
 function FinalCtaSection() {
   return (
     <section className="bg-neutral-900 px-4 py-14 text-white sm:px-6 sm:py-20">
-      <div className="mx-auto flex max-w-xl flex-col items-center gap-6 text-center">
+      <Reveal className="mx-auto flex max-w-xl flex-col items-center gap-6 text-center">
         <h2 className="text-2xl sm:text-3xl">Pare de perder dinheiro em cada prato.</h2>
         <p className="text-neutral-300">
           Teste o CUSTTO grátis por {SUBSCRIPTION_TRIAL_DAYS} dias e descubra o preço certo do seu
@@ -319,11 +333,11 @@ function FinalCtaSection() {
         </p>
         <Link
           href="/signup"
-          className="rounded-md bg-accent px-6 py-3 text-base font-medium text-white hover:bg-accent-active"
+          className="rounded-md bg-accent px-6 py-3 text-base font-medium text-white transition-colors hover:bg-accent-active"
         >
           Testar grátis por 7 dias
         </Link>
-      </div>
+      </Reveal>
     </section>
   );
 }
