@@ -25,40 +25,32 @@ export default async function RecipeDetailPage({ params }: Props) {
     redirect("/billing");
   }
 
-  const { data: recipe } = await supabase
-    .from("recipes")
-    .select("*")
-    .eq("id", id)
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const [
+    { data: recipe },
+    { data: recipeIngredients },
+    { data: ingredients },
+    { data: costSettings },
+    { data: platforms },
+  ] = await Promise.all([
+    supabase.from("recipes").select("*").eq("id", id).eq("user_id", user.id).maybeSingle(),
+    supabase.from("recipe_ingredients").select("*").eq("recipe_id", id),
+    supabase
+      .from("ingredients")
+      .select("id, name, unit, unit_cost")
+      .eq("user_id", user.id)
+      .order("name", { ascending: true }),
+    supabase.from("cost_settings").select("*").eq("user_id", user.id).maybeSingle(),
+    supabase
+      .from("delivery_platforms")
+      .select("id, name, fee_pct")
+      .eq("user_id", user.id)
+      .eq("is_active", true)
+      .order("name", { ascending: true }),
+  ]);
 
   if (!recipe) {
     redirect("/receitas");
   }
-
-  const { data: recipeIngredients } = await supabase
-    .from("recipe_ingredients")
-    .select("*")
-    .eq("recipe_id", id);
-
-  const { data: ingredients } = await supabase
-    .from("ingredients")
-    .select("id, name, unit, unit_cost")
-    .eq("user_id", user.id)
-    .order("name", { ascending: true });
-
-  const { data: costSettings } = await supabase
-    .from("cost_settings")
-    .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  const { data: platforms } = await supabase
-    .from("delivery_platforms")
-    .select("id, name, fee_pct")
-    .eq("user_id", user.id)
-    .eq("is_active", true)
-    .order("name", { ascending: true });
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">

@@ -41,26 +41,24 @@ export default async function DashboardPage() {
     redirect("/billing");
   }
 
-  const { data: recipes } = await supabase
-    .from("recipes")
-    .select("id, name, loss_pct, practiced_price")
-    .eq("user_id", user.id)
-    .order("name", { ascending: true });
+  const [{ data: recipes }, { data: ingredients }, { data: costSettings }] = await Promise.all([
+    supabase
+      .from("recipes")
+      .select("id, name, loss_pct, practiced_price")
+      .eq("user_id", user.id)
+      .order("name", { ascending: true }),
+    supabase.from("ingredients").select("id, unit_cost").eq("user_id", user.id),
+    supabase.from("cost_settings").select("*").eq("user_id", user.id).maybeSingle(),
+  ]);
 
-  const { data: recipeIngredients } = await supabase
-    .from("recipe_ingredients")
-    .select("recipe_id, ingredient_id, quantity_used");
-
-  const { data: ingredients } = await supabase
-    .from("ingredients")
-    .select("id, unit_cost")
-    .eq("user_id", user.id);
-
-  const { data: costSettings } = await supabase
-    .from("cost_settings")
-    .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const recipeIds = (recipes ?? []).map((recipe) => recipe.id);
+  const { data: recipeIngredients } =
+    recipeIds.length > 0
+      ? await supabase
+          .from("recipe_ingredients")
+          .select("recipe_id, ingredient_id, quantity_used")
+          .in("recipe_id", recipeIds)
+      : { data: [] };
 
   const costByRecipe = aggregateRecipeCosts(recipeIngredients ?? [], ingredients ?? []);
 
