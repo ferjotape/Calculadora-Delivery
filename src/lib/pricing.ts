@@ -1,6 +1,20 @@
-import type { CostSettings } from "@/lib/types/database";
+import type { CostSettings, FixedCost } from "@/lib/types/database";
 
 export type RecipePricingIssue = "no_cost_settings" | "invalid_loss" | "revenue_below_fixed_costs";
+
+/**
+ * Subconjunto de CostSettings usado nos cálculos de markup/resumo — permite
+ * chamar essas funções tanto com um CostSettings completo (vindo do banco)
+ * quanto com o estado ainda não salvo de um formulário client-side.
+ */
+type CostSettingsCalcInput = {
+  fixed_costs: FixedCost[];
+  card_fee_pct: number;
+  packaging_pct: number;
+  free_delivery_pct: number;
+  desired_profit_pct: number;
+  avg_monthly_revenue: number | null;
+};
 
 /**
  * Nunca deixamos o divisor do markup chegar a zero ou menos — cada
@@ -26,7 +40,7 @@ type MarkupCalc = {
  * Usado tanto por computeRecipePricing (por receita) quanto pelo indicador de
  * "markup atual" do dashboard.
  */
-function computeMarkupFromCostSettings(costSettings: CostSettings): MarkupCalc {
+function computeMarkupFromCostSettings(costSettings: CostSettingsCalcInput): MarkupCalc {
   const fixedCostsTotal = costSettings.fixed_costs.reduce((sum, item) => sum + item.value, 0);
   const hasRevenueEstimate = Boolean(
     costSettings.avg_monthly_revenue && costSettings.avg_monthly_revenue > 0
@@ -165,7 +179,7 @@ export function computeRecipePricing({
  * salvas, sem faturamento médio informado, ou faturamento médio abaixo dos
  * custos fixos (mesma checagem de computeRecipePricing).
  */
-export function computeCurrentMarkup(costSettings: CostSettings | null): number | null {
+export function computeCurrentMarkup(costSettings: CostSettingsCalcInput | null): number | null {
   if (!costSettings) return null;
   if (!costSettings.avg_monthly_revenue || costSettings.avg_monthly_revenue <= 0) return null;
 
@@ -208,7 +222,7 @@ export type CostSettingsSummary = {
  * (veja computeRecipePricing) — apenas replica as mesmas frações de custo fixo/variável.
  */
 export function computeCostSettingsSummary(
-  costSettings: CostSettings | null
+  costSettings: CostSettingsCalcInput | null
 ): CostSettingsSummary {
   if (!costSettings) {
     return {

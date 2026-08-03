@@ -16,11 +16,16 @@ export default async function CustosPage() {
     redirect("/login");
   }
 
-  const { data: costSettings } = await supabase
-    .from("cost_settings")
-    .select("*")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const year = new Date().getFullYear();
+
+  const [{ data: costSettings }, { data: monthlyRevenueRows }] = await Promise.all([
+    supabase.from("cost_settings").select("*").eq("user_id", user.id).maybeSingle(),
+    supabase
+      .from("monthly_revenue")
+      .select("month, value")
+      .eq("user_id", user.id)
+      .eq("year", year),
+  ]);
 
   const defaultValues: CostSettingsInput = {
     fixed_costs: costSettings?.fixed_costs ?? [],
@@ -30,6 +35,11 @@ export default async function CustosPage() {
     desired_profit_pct: costSettings?.desired_profit_pct ?? 0,
     avg_monthly_revenue: costSettings?.avg_monthly_revenue ?? null,
   };
+
+  const initialMonthlyValues: (number | null)[] = Array.from({ length: 12 }, (_, i) => {
+    const row = monthlyRevenueRows?.find((r) => r.month === i + 1);
+    return row ? row.value : null;
+  });
 
   const costSummary = computeCostSettingsSummary(costSettings ?? null);
 
@@ -46,7 +56,11 @@ export default async function CustosPage() {
         </p>
       )}
 
-      <CostSettingsForm defaultValues={defaultValues} />
+      <CostSettingsForm
+        defaultValues={defaultValues}
+        year={year}
+        initialMonthlyValues={initialMonthlyValues}
+      />
 
       <div className="flex shrink-0 justify-end border-t border-neutral-200 pt-3 dark:border-neutral-800">
         <Link

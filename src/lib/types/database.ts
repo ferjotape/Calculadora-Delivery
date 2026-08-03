@@ -73,6 +73,15 @@ export type RecipePlatformPrice = {
   calculated_at: string;
 };
 
+export type MonthlyRevenue = {
+  id: string;
+  user_id: string;
+  year: number;
+  month: number;
+  value: number;
+  updated_at: string;
+};
+
 export type Subscription = {
   id: string;
   user_id: string;
@@ -144,6 +153,12 @@ export type Database = {
         Row: Subscription;
         Insert: Partial<Subscription> & { user_id: string };
         Update: Partial<Subscription>;
+        Relationships: [];
+      };
+      monthly_revenue: {
+        Row: MonthlyRevenue;
+        Insert: Partial<MonthlyRevenue> & { user_id: string; year: number; month: number; value: number };
+        Update: Partial<MonthlyRevenue>;
         Relationships: [];
       };
     };

@@ -1,14 +1,47 @@
 "use client";
 
 import { useState, useTransition, type SVGProps } from "react";
-import { useFieldArray, useForm, type UseFormRegisterReturn } from "react-hook-form";
+import {
+  useFieldArray,
+  useForm,
+  useWatch,
+  type UseFormRegisterReturn,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { costSettingsSchema, type CostSettingsInput } from "@/lib/validation/cost-settings";
 import { saveCostSettings } from "./actions";
+import { saveMonthlyRevenue } from "./monthly-revenue-actions";
 import { Card } from "@/components/Card";
+import { computeCurrentMarkup, getMarkupBenchmark, type MarkupBenchmark } from "@/lib/pricing";
+import { formatCurrency, formatNumber } from "@/lib/format";
+import type { FixedCost } from "@/lib/types/database";
 
 type Props = {
   defaultValues: CostSettingsInput;
+  year: number;
+  initialMonthlyValues: (number | null)[];
+};
+
+const MONTH_LABELS = [
+  "Jan",
+  "Fev",
+  "Mar",
+  "Abr",
+  "Mai",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Set",
+  "Out",
+  "Nov",
+  "Dez",
+];
+
+const MARKUP_BENCHMARK_COLOR: Record<MarkupBenchmark, string> = {
+  excellent: "text-green-600 dark:text-green-500",
+  good: "text-green-600 dark:text-green-500",
+  medium: "text-amber-600 dark:text-amber-500",
+  high: "text-red-600 dark:text-red-500",
 };
 
 const nameInputClass =
@@ -17,11 +50,12 @@ const nameInputClass =
 const valueInputClass =
   "w-full rounded-md border border-neutral-300 px-2 py-2 text-right text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:focus:border-neutral-100";
 
-export function CostSettingsForm({ defaultValues }: Props) {
+export function CostSettingsForm({ defaultValues, year, initialMonthlyValues }: Props) {
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(
     null
   );
+  const [monthlyValues, setMonthlyValues] = useState<(number | null)[]>(initialMonthlyValues);
 
   const {
     register,
@@ -38,21 +72,62 @@ export function CostSettingsForm({ defaultValues }: Props) {
     name: "fixed_costs",
   });
 
+  const watchedValues = useWatch({ control, defaultValue: defaultValues });
+
+  const filledMonthlyValues = monthlyValues.filter((v): v is number => v !== null);
+  const totalMonthlyRevenue = filledMonthlyValues.reduce((sum, v) => sum + v, 0);
+  const avgMonthlyRevenue =
+    filledMonthlyValues.length > 0 ? totalMonthlyRevenue / filledMonthlyValues.length : null;
+
+  const watchedFixedCosts: FixedCost[] = (watchedValues.fixed_costs ?? []).map((item) => ({
+    name: item?.name ?? "",
+    value: item?.value ?? 0,
+  }));
+
+  const currentMarkup = computeCurrentMarkup({
+    fixed_costs: watchedFixedCosts,
+    card_fee_pct: Number(watchedValues.card_fee_pct) || 0,
+    packaging_pct: Number(watchedValues.packaging_pct) || 0,
+    free_delivery_pct: defaultValues.free_delivery_pct,
+    desired_profit_pct: Number(watchedValues.desired_profit_pct) || 0,
+    avg_monthly_revenue: avgMonthlyRevenue,
+  });
+  const markupBenchmark = currentMarkup !== null ? getMarkupBenchmark(currentMarkup) : null;
+
+  const handleMonthChange = (index: number, raw: string) => {
+    setMonthlyValues((prev) => {
+      const next = [...prev];
+      next[index] = raw === "" ? null : Number(raw);
+      return next;
+    });
+  };
+
   const onSubmit = (values: CostSettingsInput) => {
     setFeedback(null);
     startTransition(async () => {
-      const result = await saveCostSettings(values);
-      if (result.success) {
-        setFeedback({ type: "success", message: "Configurações salvas com sucesso." });
-      } else {
-        setFeedback({ type: "error", message: result.error ?? "Erro ao salvar." });
+      const [costResult, revenueResult] = await Promise.all([
+        saveCostSettings({
+          ...values,
+          free_delivery_pct: defaultValues.free_delivery_pct,
+          avg_monthly_revenue: avgMonthlyRevenue,
+        }),
+        saveMonthlyRevenue({ year, values: monthlyValues }),
+      ]);
+
+      if (!costResult.success || !revenueResult.success) {
+        setFeedback({
+          type: "error",
+          message: costResult.error ?? revenueResult.error ?? "Erro ao salvar.",
+        });
+        return;
       }
+      setFeedback({ type: "success", message: "Configurações salvas com sucesso." });
     });
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:grid-rows-[auto_auto] lg:gap-4">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4">
         <Card
           title="Custos fixos"
           description="Aluguel, salários, contas... adicione quantos itens precisar."
@@ -112,6 +187,11 @@ export function CostSettingsForm({ defaultValues }: Props) {
         </Card>
 
         <Card title="Custos variáveis" description="Percentuais aplicados sobre o preço de venda.">
+          <ReadOnlyPercentField
+            id="free_delivery_pct"
+            label="Entrega grátis (%)"
+            value={defaultValues.free_delivery_pct}
+          />
           <PercentField
             id="card_fee_pct"
             label="Taxa de cartão (%)"
@@ -124,15 +204,9 @@ export function CostSettingsForm({ defaultValues }: Props) {
             register={register("packaging_pct", { valueAsNumber: true })}
             error={errors.packaging_pct?.message}
           />
-          <PercentField
-            id="free_delivery_pct"
-            label="Entrega grátis (%)"
-            register={register("free_delivery_pct", { valueAsNumber: true })}
-            error={errors.free_delivery_pct?.message}
-          />
         </Card>
 
-        <Card title="Lucro desejado" description="Base para o cálculo do markup ideal do seu cardápio.">
+        <Card title="Markup ideal" description="Base para o cálculo do markup ideal do seu cardápio.">
           <PercentField
             id="desired_profit_pct"
             label="Lucro desejado (%)"
@@ -142,25 +216,63 @@ export function CostSettingsForm({ defaultValues }: Props) {
 
           <div className="flex flex-col gap-1">
             <div className="grid grid-cols-[1fr_7rem] items-center gap-3 rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700">
-              <label htmlFor="avg_monthly_revenue" className="text-sm font-medium">
-                Faturamento médio mensal (opcional)
-              </label>
-              <input
-                id="avg_monthly_revenue"
-                type="number"
-                inputMode="decimal"
-                step="0.01"
-                min="0"
-                placeholder="R$ 0,00"
-                {...register("avg_monthly_revenue", {
-                  setValueAs: (v) => (v === "" ? null : Number(v)),
-                })}
-                className={valueInputClass}
-              />
+              <span className="text-sm font-medium">Markup ideal</span>
+              <span
+                className={`text-right font-mono text-base ${markupBenchmark ? MARKUP_BENCHMARK_COLOR[markupBenchmark] : ""}`}
+              >
+                {currentMarkup !== null
+                  ? formatNumber(currentMarkup, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })
+                  : "—"}
+              </span>
             </div>
-            <p className="px-1 text-xs text-neutral-400">
-              Usado para estimar o markup quando ainda não há histórico de vendas.
-            </p>
+            {currentMarkup === null && (
+              <p className="px-1 text-xs text-neutral-400">
+                Preencha o faturamento anual abaixo para calcular o markup.
+              </p>
+            )}
+          </div>
+        </Card>
+
+        <Card
+          title="Faturamento anual"
+          description="Informe o faturamento de cada mês para calcular a média usada no markup."
+          className="lg:col-span-2"
+        >
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+            {MONTH_LABELS.map((label, index) => (
+              <div key={label} className="flex flex-col gap-1">
+                <label htmlFor={`month-${index}`} className="px-1 text-xs font-medium text-neutral-500">
+                  {label}
+                </label>
+                <input
+                  id={`month-${index}`}
+                  type="number"
+                  inputMode="decimal"
+                  step="0.01"
+                  min="0"
+                  placeholder="R$ 0,00"
+                  value={monthlyValues[index] ?? ""}
+                  onChange={(e) => handleMonthChange(index, e.target.value)}
+                  className={valueInputClass}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
+            <div className="flex flex-col gap-1 rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700">
+              <span className="text-xs text-neutral-500">Média mensal</span>
+              <span className="font-mono text-base">
+                {avgMonthlyRevenue !== null ? formatCurrency(avgMonthlyRevenue) : "—"}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1 rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700">
+              <span className="text-xs text-neutral-500">Total faturado</span>
+              <span className="font-mono text-base">{formatCurrency(totalMonthlyRevenue)}</span>
+            </div>
           </div>
         </Card>
       </div>
@@ -215,6 +327,30 @@ function PercentField({
         />
       </div>
       {error && <p className="px-1 text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+function ReadOnlyPercentField({
+  id,
+  label,
+  value,
+}: {
+  id: string;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="grid grid-cols-[1fr_7rem] items-center gap-3 rounded-md border border-neutral-300 bg-neutral-50 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900">
+      <label htmlFor={id} className="text-sm font-medium text-neutral-500">
+        {label}
+        <span className="block text-xs font-normal text-neutral-400">
+          Preenchido em Custo Motoboy
+        </span>
+      </label>
+      <span id={id} className="text-right font-mono text-sm text-neutral-500">
+        {value > 0 ? `${formatNumber(value, { maximumFractionDigits: 2 })}%` : "—"}
+      </span>
     </div>
   );
 }
