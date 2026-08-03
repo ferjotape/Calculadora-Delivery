@@ -34,7 +34,7 @@ export default async function CustosPage() {
   const costSummary = computeCostSettingsSummary(costSettings ?? null);
 
   return (
-    <div className="mx-auto flex h-full min-h-0 w-full max-w-4xl flex-col gap-3 overflow-hidden p-4 sm:p-6">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 p-4 sm:p-6">
       <ScreenHeader
         title="Configurações de custos"
         description="Esses dados servem de base para calcular o preço ideal dos seus pratos."

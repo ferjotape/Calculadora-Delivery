@@ -74,10 +74,10 @@ export function RecipesManager({ initialRecipes }: Props) {
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col gap-3">
-      {error && <p className="shrink-0 text-sm text-red-600">{error}</p>}
+    <div className="flex flex-col gap-3">
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr] gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <Card
           title="Nova receita"
           description="Depois de criar, você adiciona os insumos e as quantidades usadas."
@@ -114,7 +114,7 @@ export function RecipesManager({ initialRecipes }: Props) {
           </div>
         </Card>
 
-        <Card scrollable>
+        <Card>
           {recipes.length === 0 && (
             <p className="text-sm text-neutral-400">Nenhuma receita cadastrada ainda.</p>
           )}

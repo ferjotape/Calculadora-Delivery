@@ -27,7 +27,7 @@ export default async function IngredientsPage() {
     .order("code", { ascending: true });
 
   return (
-    <div className="mx-auto flex h-full min-h-0 w-full max-w-5xl flex-col gap-3 overflow-hidden p-4 sm:p-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 p-4 sm:p-6">
       <ScreenHeader
         title="Meus insumos"
         description="Cadastre os insumos usados nas suas receitas. O custo unitário é calculado automaticamente a partir do valor pago, do volume comprado e do fator de correção."

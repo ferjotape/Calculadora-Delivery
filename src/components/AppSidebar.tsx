@@ -74,7 +74,7 @@ export function AppSidebar() {
       </aside>
 
       {/* Mobile: barra superior com botão de menu */}
-      <header className="flex shrink-0 items-center justify-between gap-4 border-b border-neutral-200 px-4 py-4 md:hidden dark:border-neutral-800">
+      <header className="flex items-center justify-between gap-4 border-b border-neutral-200 px-4 py-4 md:hidden dark:border-neutral-800">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -92,11 +92,7 @@ export function AppSidebar() {
         </form>
       </header>
 
-      {/* Mobile: menu lateral (drawer). position:fixed é relativo à viewport
-          porque nenhum ancestral (aqui ou em (app)/layout.tsx) usa transform/
-          filter/perspective/contain — não adicione nada disso em um
-          ancestral sem reconferir, ou o drawer passa a ficar preso dentro do
-          shell com overflow-hidden em vez de sobrepor a tela inteira. */}
+      {/* Mobile: menu lateral (drawer) */}
       <div
         className={`fixed inset-0 z-50 md:hidden ${isDrawerOpen ? "" : "pointer-events-none"}`}
       >

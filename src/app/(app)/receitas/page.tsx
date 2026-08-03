@@ -53,7 +53,7 @@ export default async function RecipesPage() {
   });
 
   return (
-    <div className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col gap-3 overflow-hidden p-4 sm:p-6">
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 p-4 sm:p-6">
       <ScreenHeader
         title="Minhas receitas"
         description="Monte seus pratos a partir dos insumos já cadastrados e acompanhe o custo de cada receita."

@@ -23,10 +23,10 @@ export function PlatformsManager({ initialPlatforms }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col gap-3">
-      {error && <p className="shrink-0 text-sm text-red-600">{error}</p>}
+    <div className="flex flex-col gap-3">
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr] gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <Card
           title="Adicionar plataforma"
           description="Cadastre as plataformas que você usa e a taxa (%) que cada uma cobra sobre o preço de venda."
@@ -40,7 +40,7 @@ export function PlatformsManager({ initialPlatforms }: Props) {
           />
         </Card>
 
-        <Card scrollable>
+        <Card>
           {platforms.length === 0 && (
             <p className="text-sm text-neutral-400">Nenhuma plataforma cadastrada ainda.</p>
           )}

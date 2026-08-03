@@ -51,12 +51,11 @@ export function CostSettingsForm({ defaultValues }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex h-full min-h-0 flex-1 flex-col gap-3">
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden lg:grid-cols-2 lg:grid-rows-2 lg:gap-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:grid-rows-[auto_auto] lg:gap-4">
         <Card
           title="Custos fixos"
           description="Aluguel, salários, contas... adicione quantos itens precisar."
-          scrollable
           className="lg:row-span-2"
           footer={
             <button

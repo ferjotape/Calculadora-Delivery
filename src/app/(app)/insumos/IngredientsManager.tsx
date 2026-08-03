@@ -36,10 +36,10 @@ export function IngredientsManager({ initialIngredients }: Props) {
   }, [ingredients, search]);
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col gap-3">
-      {error && <p className="shrink-0 text-sm text-red-600">{error}</p>}
+    <div className="flex flex-col gap-3">
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr] gap-3">
+      <div className="grid grid-cols-1 gap-3">
         <Card
           title="Adicionar insumo"
           description="Cadastre o insumo com o valor pago e o volume comprado para calcular o custo unitário automaticamente."
@@ -54,7 +54,6 @@ export function IngredientsManager({ initialIngredients }: Props) {
         </Card>
 
         <Card
-          scrollable
           headerExtra={
             <div>
               <label htmlFor="search" className="text-sm font-medium">

@@ -3,9 +3,9 @@ import { AppSidebar } from "@/components/AppSidebar";
 
 export default function AppGroupLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-dvh flex-col overflow-hidden md:flex-row">
+    <div className="flex min-h-screen flex-col md:flex-row">
       <AppSidebar />
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">{children}</main>
+      <main className="min-w-0 flex-1">{children}</main>
     </div>
   );
 }

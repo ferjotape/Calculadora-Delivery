@@ -109,11 +109,11 @@ export default async function DashboardPage() {
   const belowCount = dashboardRecipes.filter((r) => r.status === "below").length;
 
   return (
-    <div className="mx-auto flex h-full min-h-0 w-full max-w-6xl flex-col gap-3 overflow-hidden p-4 sm:p-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 p-4 sm:p-6">
       <ScreenHeader title="Dashboard" description="Visão geral da precificação do seu cardápio." />
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden sm:gap-4 lg:grid-cols-[minmax(280px,360px)_1fr]">
-        <Card title="Visão geral" scrollable>
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-[minmax(280px,360px)_1fr]">
+        <Card title="Visão geral">
           <div className="grid grid-cols-2 gap-3">
             <ResumoCard
               icon={<RecipeBookIcon className="h-5 w-5" />}
@@ -202,7 +202,7 @@ export default async function DashboardPage() {
           </div>
         </Card>
 
-        <Card title="Minhas receitas" scrollable={dashboardRecipes.length > 0}>
+        <Card title="Minhas receitas">
           {dashboardRecipes.length === 0 ? (
             <p className="rounded-md border border-dashed border-neutral-300 px-4 py-8 text-center text-sm text-neutral-400 dark:border-neutral-700">
               Nenhuma receita cadastrada ainda.{" "}

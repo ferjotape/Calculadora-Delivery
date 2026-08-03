@@ -42,7 +42,7 @@ export default async function BillingPage({ searchParams }: Props) {
     : null;
 
   return (
-    <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col justify-center gap-4 overflow-hidden p-4 sm:p-6">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-4 p-4 sm:p-6">
       <ScreenHeader title="Minha assinatura" description="Acesso ao CUSTTO é por assinatura mensal." />
 
       {success === "1" && (
@@ -56,7 +56,7 @@ export default async function BillingPage({ searchParams }: Props) {
         </p>
       )}
 
-      <div className="flex max-h-full shrink-0 flex-col gap-3 overflow-y-auto rounded-md border border-neutral-300 p-4 dark:border-neutral-700">
+      <div className="flex flex-col gap-3 rounded-md border border-neutral-300 p-4 dark:border-neutral-700">
         <div className="flex items-center justify-between">
           <span className="text-sm text-neutral-500">Status</span>
           <span

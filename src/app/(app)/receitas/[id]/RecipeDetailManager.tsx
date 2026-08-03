@@ -167,10 +167,10 @@ export function RecipeDetailManager({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col gap-3">
-      {error && <p className="shrink-0 text-sm text-red-600">{error}</p>}
+    <div className="flex flex-col gap-3">
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[auto_auto_minmax(0,1fr)_minmax(0,1fr)] gap-3 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:gap-4">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 lg:gap-4">
         <Card title="Detalhes da receita">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div className="lg:col-span-2">
@@ -243,7 +243,6 @@ export function RecipeDetailManager({
         <Card
           title="Precificação sugerida"
           description="Calculada a partir do custo dos insumos, da % de perda e das Configurações de Custos (sem taxa de plataforma)."
-          scrollable
         >
           {pricing.issue === "no_cost_settings" && (
             <p className="text-sm text-amber-600 dark:text-amber-500">
@@ -336,7 +335,6 @@ export function RecipeDetailManager({
               />
             )
           }
-          scrollable
           footer={
             <div className="flex justify-end">
               <p className="text-sm text-neutral-500">
@@ -377,7 +375,6 @@ export function RecipeDetailManager({
         <Card
           title="Preço por plataforma"
           description="Preço para que, descontada a taxa de cada plataforma ativa, sobre o preço sugerido."
-          scrollable
         >
           {pricing.suggestedPrice === null ? (
             <p className="text-sm text-neutral-400">

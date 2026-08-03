@@ -9,7 +9,7 @@ type Props = {
 
 export function ScreenHeader({ title, description, backHref, backLabel = "← Voltar" }: Props) {
   return (
-    <div className="shrink-0">
+    <div>
       {backHref && (
         <Link href={backHref} className="text-sm text-neutral-500 hover:underline">
           {backLabel}
