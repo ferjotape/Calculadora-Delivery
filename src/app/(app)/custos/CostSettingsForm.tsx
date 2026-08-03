@@ -5,6 +5,7 @@ import { useFieldArray, useForm, type UseFormRegisterReturn } from "react-hook-f
 import { zodResolver } from "@hookform/resolvers/zod";
 import { costSettingsSchema, type CostSettingsInput } from "@/lib/validation/cost-settings";
 import { saveCostSettings } from "./actions";
+import { Card } from "@/components/Card";
 
 type Props = {
   defaultValues: CostSettingsInput;
@@ -50,17 +51,23 @@ export function CostSettingsForm({ defaultValues }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-10">
-      {/* Custos fixos */}
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-lg">Custos fixos</h2>
-          <p className="text-sm text-neutral-500">
-            Aluguel, salários, contas... adicione quantos itens precisar.
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex h-full min-h-0 flex-1 flex-col gap-3">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden lg:grid-cols-2 lg:grid-rows-2 lg:gap-4">
+        <Card
+          title="Custos fixos"
+          description="Aluguel, salários, contas... adicione quantos itens precisar."
+          scrollable
+          className="lg:row-span-2"
+          footer={
+            <button
+              type="button"
+              onClick={() => append({ name: "", value: 0 })}
+              className="self-start rounded-md border border-dashed border-neutral-400 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-900"
+            >
+              + Adicionar custo fixo
+            </button>
+          }
+        >
           {fields.length === 0 && (
             <p className="text-sm text-neutral-400">Nenhum custo fixo adicionado ainda.</p>
           )}
@@ -103,25 +110,9 @@ export function CostSettingsForm({ defaultValues }: Props) {
               </div>
             );
           })}
-        </div>
+        </Card>
 
-        <button
-          type="button"
-          onClick={() => append({ name: "", value: 0 })}
-          className="self-start rounded-md border border-dashed border-neutral-400 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-900"
-        >
-          + Adicionar custo fixo
-        </button>
-      </section>
-
-      {/* Custos variáveis */}
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-lg">Custos variáveis</h2>
-          <p className="text-sm text-neutral-500">Percentuais aplicados sobre o preço de venda.</p>
-        </div>
-
-        <div className="flex flex-col gap-3">
+        <Card title="Custos variáveis" description="Percentuais aplicados sobre o preço de venda.">
           <PercentField
             id="card_fee_pct"
             label="Taxa de cartão (%)"
@@ -140,19 +131,9 @@ export function CostSettingsForm({ defaultValues }: Props) {
             register={register("free_delivery_pct", { valueAsNumber: true })}
             error={errors.free_delivery_pct?.message}
           />
-        </div>
-      </section>
+        </Card>
 
-      {/* Lucro desejado */}
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-lg">Lucro desejado</h2>
-          <p className="text-sm text-neutral-500">
-            Base para o cálculo do markup ideal do seu cardápio.
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-3">
+        <Card title="Lucro desejado" description="Base para o cálculo do markup ideal do seu cardápio.">
           <PercentField
             id="desired_profit_pct"
             label="Lucro desejado (%)"
@@ -182,22 +163,26 @@ export function CostSettingsForm({ defaultValues }: Props) {
               Usado para estimar o markup quando ainda não há histórico de vendas.
             </p>
           </div>
-        </div>
-      </section>
+        </Card>
+      </div>
 
-      {feedback && (
-        <p className={feedback.type === "success" ? "text-sm text-green-600" : "text-sm text-red-600"}>
-          {feedback.message}
-        </p>
-      )}
+      <div className="flex shrink-0 items-center justify-between gap-4 border-t border-neutral-200 pt-3 dark:border-neutral-800">
+        {feedback ? (
+          <p className={feedback.type === "success" ? "text-sm text-green-600" : "text-sm text-red-600"}>
+            {feedback.message}
+          </p>
+        ) : (
+          <span />
+        )}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="self-start rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-active disabled:opacity-60"
-      >
-        {isPending ? "Salvando..." : "Salvar configurações"}
-      </button>
+        <button
+          type="submit"
+          disabled={isPending}
+          className="shrink-0 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-active disabled:opacity-60"
+        >
+          {isPending ? "Salvando..." : "Salvar configurações"}
+        </button>
+      </div>
     </form>
   );
 }

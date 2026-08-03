@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createRecipe, deleteRecipe } from "./actions";
 import { formatCurrency } from "@/lib/format";
+import { Card } from "@/components/Card";
 
 export type RecipeSummary = {
   id: string;
@@ -73,89 +74,87 @@ export function RecipesManager({ initialRecipes }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-lg">Nova receita</h2>
-          <p className="text-sm text-neutral-500">
-            Depois de criar, você adiciona os insumos e as quantidades usadas.
-          </p>
-        </div>
+    <div className="flex h-full min-h-0 flex-1 flex-col gap-3">
+      {error && <p className="shrink-0 text-sm text-red-600">{error}</p>}
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-          <div className="flex-1">
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Nome do prato (ex: Marmita de frango)"
-              className={inputClass}
-            />
-          </div>
-          <div className="sm:w-32">
-            <input
-              value={lossPct}
-              onChange={(e) => setLossPct(e.target.value)}
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              placeholder="% perda"
-              className={inputClass}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={submit}
-            disabled={isPending}
-            className="w-full rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-active disabled:opacity-60 sm:w-auto"
-          >
-            {pendingAction?.type === "create" ? "Criando..." : "Criar receita"}
-          </button>
-        </div>
-      </section>
-
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
-      <div className="flex flex-col gap-2">
-        {recipes.length === 0 && (
-          <p className="text-sm text-neutral-400">Nenhuma receita cadastrada ainda.</p>
-        )}
-
-        {recipes.map((recipe) => (
-          <div
-            key={recipe.id}
-            className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-neutral-300 p-3 dark:border-neutral-700"
-          >
-            <div>
-              <p className="text-sm font-medium">{recipe.name}</p>
-              <p className="text-xs text-neutral-500">
-                {recipe.ingredientCount} insumo(s) · {recipe.loss_pct}% de perda
-              </p>
+      <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr] gap-3">
+        <Card
+          title="Nova receita"
+          description="Depois de criar, você adiciona os insumos e as quantidades usadas."
+        >
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+            <div className="flex-1">
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Nome do prato (ex: Marmita de frango)"
+                className={inputClass}
+              />
             </div>
-
-            <div className="flex items-center gap-2">
-              <span className="rounded-md bg-neutral-900 px-2 py-1 font-mono text-xs font-semibold text-white dark:bg-white dark:text-neutral-900">
-                {formatCurrency(recipe.totalCost)}
-              </span>
-              <Link
-                href={`/receitas/${recipe.id}`}
-                className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
-              >
-                Abrir
-              </Link>
-              <button
-                type="button"
-                onClick={() => remove(recipe)}
-                disabled={isPending}
-                className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
-              >
-                {pendingAction?.type === "remove" && pendingAction.id === recipe.id
-                  ? "Removendo..."
-                  : "Remover"}
-              </button>
+            <div className="sm:w-32">
+              <input
+                value={lossPct}
+                onChange={(e) => setLossPct(e.target.value)}
+                type="number"
+                step="0.01"
+                min="0"
+                max="100"
+                placeholder="% perda"
+                className={inputClass}
+              />
             </div>
+            <button
+              type="button"
+              onClick={submit}
+              disabled={isPending}
+              className="w-full rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-active disabled:opacity-60 sm:w-auto"
+            >
+              {pendingAction?.type === "create" ? "Criando..." : "Criar receita"}
+            </button>
           </div>
-        ))}
+        </Card>
+
+        <Card scrollable>
+          {recipes.length === 0 && (
+            <p className="text-sm text-neutral-400">Nenhuma receita cadastrada ainda.</p>
+          )}
+
+          {recipes.map((recipe) => (
+            <div
+              key={recipe.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-neutral-300 p-3 dark:border-neutral-700"
+            >
+              <div>
+                <p className="text-sm font-medium">{recipe.name}</p>
+                <p className="text-xs text-neutral-500">
+                  {recipe.ingredientCount} insumo(s) · {recipe.loss_pct}% de perda
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="rounded-md bg-neutral-900 px-2 py-1 font-mono text-xs font-semibold text-white dark:bg-white dark:text-neutral-900">
+                  {formatCurrency(recipe.totalCost)}
+                </span>
+                <Link
+                  href={`/receitas/${recipe.id}`}
+                  className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
+                >
+                  Abrir
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => remove(recipe)}
+                  disabled={isPending}
+                  className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
+                >
+                  {pendingAction?.type === "remove" && pendingAction.id === recipe.id
+                    ? "Removendo..."
+                    : "Remover"}
+                </button>
+              </div>
+            </div>
+          ))}
+        </Card>
       </div>
     </div>
   );

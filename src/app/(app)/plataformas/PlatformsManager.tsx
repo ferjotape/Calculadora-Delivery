@@ -9,6 +9,7 @@ import {
 } from "./actions";
 import { PLATFORM_PRESETS } from "@/lib/validation/delivery-platform";
 import type { DeliveryPlatform } from "@/lib/types/database";
+import { Card } from "@/components/Card";
 
 type Props = {
   initialPlatforms: DeliveryPlatform[];
@@ -22,37 +23,44 @@ export function PlatformsManager({ initialPlatforms }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   return (
-    <div className="flex flex-col gap-6">
-      <NewPlatformForm
-        onCreated={(platform) => {
-          setError(null);
-          setPlatforms((prev) => [...prev, platform]);
-        }}
-        onError={setError}
-      />
+    <div className="flex h-full min-h-0 flex-1 flex-col gap-3">
+      {error && <p className="shrink-0 text-sm text-red-600">{error}</p>}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
-      <div className="flex flex-col gap-2">
-        {platforms.length === 0 && (
-          <p className="text-sm text-neutral-400">Nenhuma plataforma cadastrada ainda.</p>
-        )}
-
-        {platforms.map((platform) => (
-          <PlatformRow
-            key={platform.id}
-            platform={platform}
-            onUpdated={(updated) => {
+      <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr] gap-3">
+        <Card
+          title="Adicionar plataforma"
+          description="Cadastre as plataformas que você usa e a taxa (%) que cada uma cobra sobre o preço de venda."
+        >
+          <NewPlatformForm
+            onCreated={(platform) => {
               setError(null);
-              setPlatforms((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-            }}
-            onDeleted={(id) => {
-              setError(null);
-              setPlatforms((prev) => prev.filter((p) => p.id !== id));
+              setPlatforms((prev) => [...prev, platform]);
             }}
             onError={setError}
           />
-        ))}
+        </Card>
+
+        <Card scrollable>
+          {platforms.length === 0 && (
+            <p className="text-sm text-neutral-400">Nenhuma plataforma cadastrada ainda.</p>
+          )}
+
+          {platforms.map((platform) => (
+            <PlatformRow
+              key={platform.id}
+              platform={platform}
+              onUpdated={(updated) => {
+                setError(null);
+                setPlatforms((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+              }}
+              onDeleted={(id) => {
+                setError(null);
+                setPlatforms((prev) => prev.filter((p) => p.id !== id));
+              }}
+              onError={setError}
+            />
+          ))}
+        </Card>
       </div>
     </div>
   );
@@ -89,15 +97,7 @@ function NewPlatformForm({
   };
 
   return (
-    <section className="flex flex-col gap-3">
-      <div>
-        <h2 className="text-lg">Adicionar plataforma</h2>
-        <p className="text-sm text-neutral-500">
-          Cadastre as plataformas que você usa e a taxa (%) que cada uma cobra sobre o preço de
-          venda.
-        </p>
-      </div>
-
+    <>
       <div className="flex flex-wrap gap-2">
         {PLATFORM_PRESETS.map((preset) => (
           <button
@@ -148,7 +148,7 @@ function NewPlatformForm({
           {isPending ? "Adicionando..." : "Adicionar"}
         </button>
       </div>
-    </section>
+    </>
   );
 }
 

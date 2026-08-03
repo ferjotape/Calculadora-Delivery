@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PlatformsManager } from "./PlatformsManager";
+import { ScreenHeader } from "@/components/ScreenHeader";
 
 export default async function PlatformsPage() {
   const supabase = await createClient();
@@ -20,21 +21,18 @@ export default async function PlatformsPage() {
     .order("name", { ascending: true });
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
-      <div>
-        <h1 className="text-2xl">Plataformas de delivery</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Cadastre as plataformas que você usa (iFood, 99Food, Keeta, própria...) e a taxa
-          cobrada por cada uma.
-        </p>
-      </div>
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-2xl flex-col gap-3 overflow-hidden p-4 sm:p-6">
+      <ScreenHeader
+        title="Plataformas de delivery"
+        description="Cadastre as plataformas que você usa (iFood, 99Food, Keeta, própria...) e a taxa cobrada por cada uma."
+      />
 
       <PlatformsManager initialPlatforms={platforms ?? []} />
 
-      <div className="flex justify-end border-t border-neutral-200 pt-6 dark:border-neutral-800">
+      <div className="flex shrink-0 justify-end border-t border-neutral-200 pt-3 dark:border-neutral-800">
         <Link
           href="/insumos"
-          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-active"
+          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-active"
         >
           Continuar
         </Link>

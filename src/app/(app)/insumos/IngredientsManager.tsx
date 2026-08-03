@@ -5,6 +5,7 @@ import { createIngredient, deleteIngredient, updateIngredient } from "./actions"
 import { INGREDIENT_UNITS, type IngredientUnit } from "@/lib/validation/ingredient";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import type { Ingredient } from "@/lib/types/database";
+import { Card } from "@/components/Card";
 
 type Props = {
   initialIngredients: Ingredient[];
@@ -35,76 +36,88 @@ export function IngredientsManager({ initialIngredients }: Props) {
   }, [ingredients, search]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <NewIngredientForm
-        onCreated={(ingredient) => {
-          setError(null);
-          setIngredients((prev) => [...prev, ingredient]);
-        }}
-        onError={setError}
-      />
+    <div className="flex h-full min-h-0 flex-1 flex-col gap-3">
+      {error && <p className="shrink-0 text-sm text-red-600">{error}</p>}
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
-      <div className="flex flex-col gap-3">
-        <div>
-          <label htmlFor="search" className="text-sm font-medium">
-            Buscar insumo
-          </label>
-          <input
-            id="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Digite o nome do insumo..."
-            className={`${inputClass} mt-1`}
+      <div className="grid min-h-0 flex-1 grid-rows-[auto_1fr] gap-3">
+        <Card
+          title="Adicionar insumo"
+          description="Cadastre o insumo com o valor pago e o volume comprado para calcular o custo unitário automaticamente."
+        >
+          <NewIngredientForm
+            onCreated={(ingredient) => {
+              setError(null);
+              setIngredients((prev) => [...prev, ingredient]);
+            }}
+            onError={setError}
           />
-        </div>
+        </Card>
 
-        {ingredients.length === 0 && (
-          <p className="text-sm text-neutral-400">Nenhum insumo cadastrado ainda.</p>
-        )}
+        <Card
+          scrollable
+          headerExtra={
+            <div>
+              <label htmlFor="search" className="text-sm font-medium">
+                Buscar insumo
+              </label>
+              <input
+                id="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Digite o nome do insumo..."
+                className={`${inputClass} mt-1`}
+              />
+            </div>
+          }
+        >
+          {ingredients.length === 0 && (
+            <p className="text-sm text-neutral-400">Nenhum insumo cadastrado ainda.</p>
+          )}
 
-        {ingredients.length > 0 && filtered.length === 0 && (
-          <p className="text-sm text-neutral-400">Nenhum insumo encontrado para &quot;{search}&quot;.</p>
-        )}
+          {ingredients.length > 0 && filtered.length === 0 && (
+            <p className="text-sm text-neutral-400">
+              Nenhum insumo encontrado para &quot;{search}&quot;.
+            </p>
+          )}
 
-        {filtered.length > 0 && (
-          <div className="overflow-x-auto rounded-md border border-neutral-200 dark:border-neutral-800">
-            <table className="w-full min-w-[720px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-neutral-200 bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
-                  <th className="px-3 py-2 font-medium">Cód.</th>
-                  <th className="px-3 py-2 font-medium">Nome</th>
-                  <th className="px-3 py-2 font-medium">Valor pago</th>
-                  <th className="px-3 py-2 font-medium">Volume</th>
-                  <th className="px-3 py-2 font-medium">Unidade</th>
-                  <th className="px-3 py-2 font-medium">Fator correção</th>
-                  <th className="px-3 py-2 font-medium">Custo unitário</th>
-                  <th className="px-3 py-2 font-medium">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((ingredient) => (
-                  <IngredientRow
-                    key={ingredient.id}
-                    ingredient={ingredient}
-                    onUpdated={(updated) => {
-                      setError(null);
-                      setIngredients((prev) =>
-                        prev.map((i) => (i.id === updated.id ? updated : i))
-                      );
-                    }}
-                    onDeleted={(id) => {
-                      setError(null);
-                      setIngredients((prev) => prev.filter((i) => i.id !== id));
-                    }}
-                    onError={setError}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+          {filtered.length > 0 && (
+            <div className="overflow-x-auto rounded-md border border-neutral-200 dark:border-neutral-800">
+              <table className="w-full min-w-[720px] border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-neutral-200 bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
+                    <th className="px-3 py-2 font-medium">Cód.</th>
+                    <th className="px-3 py-2 font-medium">Nome</th>
+                    <th className="px-3 py-2 font-medium">Valor pago</th>
+                    <th className="px-3 py-2 font-medium">Volume</th>
+                    <th className="px-3 py-2 font-medium">Unidade</th>
+                    <th className="px-3 py-2 font-medium">Fator correção</th>
+                    <th className="px-3 py-2 font-medium">Custo unitário</th>
+                    <th className="px-3 py-2 font-medium">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((ingredient) => (
+                    <IngredientRow
+                      key={ingredient.id}
+                      ingredient={ingredient}
+                      onUpdated={(updated) => {
+                        setError(null);
+                        setIngredients((prev) =>
+                          prev.map((i) => (i.id === updated.id ? updated : i))
+                        );
+                      }}
+                      onDeleted={(id) => {
+                        setError(null);
+                        setIngredients((prev) => prev.filter((i) => i.id !== id));
+                      }}
+                      onError={setError}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
       </div>
     </div>
   );
@@ -158,15 +171,7 @@ function NewIngredientForm({
   };
 
   return (
-    <section className="flex flex-col gap-3">
-      <div>
-        <h2 className="text-lg">Adicionar insumo</h2>
-        <p className="text-sm text-neutral-500">
-          Cadastre o insumo com o valor pago e o volume comprado para calcular o custo unitário
-          automaticamente.
-        </p>
-      </div>
-
+    <>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <label className="text-sm font-medium">Nome do insumo</label>
@@ -257,7 +262,7 @@ function NewIngredientForm({
           </button>
         </div>
       </div>
-    </section>
+    </>
   );
 }
 

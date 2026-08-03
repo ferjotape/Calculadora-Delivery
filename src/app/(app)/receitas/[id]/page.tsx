@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSubscriptionStatus } from "@/lib/subscription";
 import { RecipeDetailManager } from "./RecipeDetailManager";
+import { ScreenHeader } from "@/components/ScreenHeader";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -53,13 +53,8 @@ export default async function RecipeDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
-      <div>
-        <Link href="/receitas" className="text-sm text-neutral-500 hover:underline">
-          ← Voltar para receitas
-        </Link>
-        <h1 className="mt-2 text-2xl">{recipe.name}</h1>
-      </div>
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-6xl flex-col gap-3 overflow-hidden p-4 sm:p-6">
+      <ScreenHeader title={recipe.name} backHref="/receitas" backLabel="← Voltar para receitas" />
 
       <RecipeDetailManager
         recipe={recipe}

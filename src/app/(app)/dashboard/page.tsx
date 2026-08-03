@@ -15,6 +15,8 @@ import {
   type PracticedPriceStatus,
 } from "@/lib/pricing";
 import { getSubscriptionStatus } from "@/lib/subscription";
+import { Card } from "@/components/Card";
+import { ScreenHeader } from "@/components/ScreenHeader";
 
 type DashboardRecipe = {
   id: string;
@@ -107,113 +109,117 @@ export default async function DashboardPage() {
   const belowCount = dashboardRecipes.filter((r) => r.status === "below").length;
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
-      <div>
-        <h1 className="text-2xl">Dashboard</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Visão geral da precificação do seu cardápio.
-        </p>
-      </div>
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-6xl flex-col gap-3 overflow-hidden p-4 sm:p-6">
+      <ScreenHeader title="Dashboard" description="Visão geral da precificação do seu cardápio." />
 
-      <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <ResumoCard
-          icon={<RecipeBookIcon className="h-5 w-5" />}
-          label="Receitas cadastradas"
-          value={String(totalRecipes)}
-        />
-        <ResumoCard
-          icon={<CoinIcon className="h-5 w-5" />}
-          label="Custos totais (R$)"
-          value={
-            costSummary.totalCostsValue !== null
-              ? formatCurrency(costSummary.totalCostsValue)
-              : "—"
-          }
-        />
-        <ResumoCard
-          icon={<PercentIcon className="h-5 w-5" />}
-          label="Custos totais (%)"
-          value={`${formatNumber(costSummary.totalCostsPct, { maximumFractionDigits: 1 })}%`}
-        />
-        <ResumoCard
-          icon={<GaugeIcon className="h-5 w-5" />}
-          label="Markup atual"
-          value={
-            currentMarkup !== null
-              ? formatNumber(currentMarkup, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-              : "—"
-          }
-          valueClassName={markupBenchmark ? MARKUP_BENCHMARK_COLOR[markupBenchmark] : undefined}
-          caption={
-            currentMarkup === null
-              ? "Complete as configurações de custo para ver seu markup"
-              : undefined
-          }
-        />
-      </section>
-
-      {!costSettings && (
-        <p className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
-          Configure seus custos em{" "}
-          <Link href="/custos" className="underline">
-            Configurações de Custos
-          </Link>{" "}
-          para calcular o preço sugerido das suas receitas.
-        </p>
-      )}
-
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <SummaryStat
-          label="Lucro médio"
-          value={avgProfitPct !== null ? `${formatNumber(avgProfitPct, { maximumFractionDigits: 1 })}%` : "—"}
-        />
-        <SummaryStat
-          label="Preço abaixo do ideal"
-          value={String(belowCount)}
-          highlight={belowCount > 0}
-        />
-      </section>
-
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Link
-          href="/receitas"
-          className="rounded-md bg-accent px-4 py-3 text-center text-sm font-medium text-white hover:bg-accent-active"
-        >
-          + Nova Receita
-        </Link>
-        <Link
-          href="/insumos"
-          className="rounded-md border border-neutral-300 px-4 py-3 text-center text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
-        >
-          Insumos
-        </Link>
-        <Link
-          href="/plataformas"
-          className="rounded-md border border-neutral-300 px-4 py-3 text-center text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
-        >
-          Plataformas
-        </Link>
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg">Minhas receitas</h2>
-
-        {dashboardRecipes.length === 0 ? (
-          <p className="rounded-md border border-dashed border-neutral-300 px-4 py-8 text-center text-sm text-neutral-400 dark:border-neutral-700">
-            Nenhuma receita cadastrada ainda.{" "}
-            <Link href="/receitas" className="underline">
-              Crie sua primeira receita
-            </Link>
-            .
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {dashboardRecipes.map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} />
-            ))}
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-hidden sm:gap-4 lg:grid-cols-[minmax(280px,360px)_1fr]">
+        <Card title="Visão geral" scrollable>
+          <div className="grid grid-cols-2 gap-3">
+            <ResumoCard
+              icon={<RecipeBookIcon className="h-5 w-5" />}
+              label="Receitas cadastradas"
+              value={String(totalRecipes)}
+            />
+            <ResumoCard
+              icon={<CoinIcon className="h-5 w-5" />}
+              label="Custos totais (R$)"
+              value={
+                costSummary.totalCostsValue !== null
+                  ? formatCurrency(costSummary.totalCostsValue)
+                  : "—"
+              }
+            />
+            <ResumoCard
+              icon={<PercentIcon className="h-5 w-5" />}
+              label="Custos totais (%)"
+              value={`${formatNumber(costSummary.totalCostsPct, { maximumFractionDigits: 1 })}%`}
+            />
+            <ResumoCard
+              icon={<GaugeIcon className="h-5 w-5" />}
+              label="Markup atual"
+              value={
+                currentMarkup !== null
+                  ? formatNumber(currentMarkup, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })
+                  : "—"
+              }
+              valueClassName={markupBenchmark ? MARKUP_BENCHMARK_COLOR[markupBenchmark] : undefined}
+              caption={
+                currentMarkup === null
+                  ? "Complete as configurações de custo para ver seu markup"
+                  : undefined
+              }
+            />
           </div>
-        )}
-      </section>
+
+          {!costSettings && (
+            <p className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300">
+              Configure seus custos em{" "}
+              <Link href="/custos" className="underline">
+                Configurações de Custos
+              </Link>{" "}
+              para calcular o preço sugerido das suas receitas.
+            </p>
+          )}
+
+          <div className="grid grid-cols-1 gap-3">
+            <SummaryStat
+              label="Lucro médio"
+              value={
+                avgProfitPct !== null
+                  ? `${formatNumber(avgProfitPct, { maximumFractionDigits: 1 })}%`
+                  : "—"
+              }
+            />
+            <SummaryStat
+              label="Preço abaixo do ideal"
+              value={String(belowCount)}
+              highlight={belowCount > 0}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-2">
+            <Link
+              href="/receitas"
+              className="rounded-md bg-accent px-4 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-accent-active"
+            >
+              + Nova Receita
+            </Link>
+            <Link
+              href="/insumos"
+              className="rounded-md border border-neutral-300 px-4 py-3 text-center text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
+            >
+              Insumos
+            </Link>
+            <Link
+              href="/plataformas"
+              className="rounded-md border border-neutral-300 px-4 py-3 text-center text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
+            >
+              Plataformas
+            </Link>
+          </div>
+        </Card>
+
+        <Card title="Minhas receitas" scrollable={dashboardRecipes.length > 0}>
+          {dashboardRecipes.length === 0 ? (
+            <p className="rounded-md border border-dashed border-neutral-300 px-4 py-8 text-center text-sm text-neutral-400 dark:border-neutral-700">
+              Nenhuma receita cadastrada ainda.{" "}
+              <Link href="/receitas" className="underline">
+                Crie sua primeira receita
+              </Link>
+              .
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {dashboardRecipes.map((recipe) => (
+                <RecipeCard key={recipe.id} recipe={recipe} />
+              ))}
+            </div>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

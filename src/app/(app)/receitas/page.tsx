@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { aggregateRecipeCosts } from "@/lib/pricing";
 import { getSubscriptionStatus } from "@/lib/subscription";
 import { RecipesManager, type RecipeSummary } from "./RecipesManager";
+import { ScreenHeader } from "@/components/ScreenHeader";
 
 export default async function RecipesPage() {
   const supabase = await createClient();
@@ -52,21 +53,18 @@ export default async function RecipesPage() {
   });
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:gap-8 sm:py-12">
-      <div>
-        <h1 className="text-2xl">Minhas receitas</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Monte seus pratos a partir dos insumos já cadastrados e acompanhe o custo de cada
-          receita.
-        </p>
-      </div>
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-3xl flex-col gap-3 overflow-hidden p-4 sm:p-6">
+      <ScreenHeader
+        title="Minhas receitas"
+        description="Monte seus pratos a partir dos insumos já cadastrados e acompanhe o custo de cada receita."
+      />
 
       <RecipesManager initialRecipes={summaries} />
 
-      <div className="flex justify-end border-t border-neutral-200 pt-6 dark:border-neutral-800">
+      <div className="flex shrink-0 justify-end border-t border-neutral-200 pt-3 dark:border-neutral-800">
         <Link
           href="/dashboard"
-          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-active"
+          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-active"
         >
           Continuar
         </Link>

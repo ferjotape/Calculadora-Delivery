@@ -4,6 +4,7 @@ import { getSubscriptionStatus } from "@/lib/subscription";
 import { SUBSCRIPTION_PRICE_BRL_CENTS, SUBSCRIPTION_TRIAL_DAYS } from "@/lib/stripe/plan";
 import { formatCurrency } from "@/lib/format";
 import { SubscribeButton } from "./SubscribeButton";
+import { ScreenHeader } from "@/components/ScreenHeader";
 
 const STATUS_LABELS: Record<string, string> = {
   active: "Ativa",
@@ -41,26 +42,21 @@ export default async function BillingPage({ searchParams }: Props) {
     : null;
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-4 py-6 sm:py-12">
-      <div>
-        <h1 className="text-2xl">Minha assinatura</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Acesso ao CUSTTO é por assinatura mensal.
-        </p>
-      </div>
+    <div className="mx-auto flex h-full min-h-0 w-full max-w-md flex-col justify-center gap-4 overflow-hidden p-4 sm:p-6">
+      <ScreenHeader title="Minha assinatura" description="Acesso ao CUSTTO é por assinatura mensal." />
 
       {success === "1" && (
-        <p className="rounded-md border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-900 dark:bg-green-950 dark:text-green-300">
+        <p className="shrink-0 rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-900 dark:bg-green-950 dark:text-green-300">
           Pagamento confirmado! Pode levar alguns segundos para liberarmos o acesso.
         </p>
       )}
       {canceled === "1" && (
-        <p className="rounded-md border border-neutral-300 bg-neutral-50 px-4 py-3 text-sm text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
+        <p className="shrink-0 rounded-md border border-neutral-300 bg-neutral-50 px-3 py-2 text-sm text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
           Checkout cancelado. Você pode assinar quando quiser.
         </p>
       )}
 
-      <div className="flex flex-col gap-3 rounded-md border border-neutral-300 p-4 dark:border-neutral-700">
+      <div className="flex max-h-full shrink-0 flex-col gap-3 overflow-y-auto rounded-md border border-neutral-300 p-4 dark:border-neutral-700">
         <div className="flex items-center justify-between">
           <span className="text-sm text-neutral-500">Status</span>
           <span

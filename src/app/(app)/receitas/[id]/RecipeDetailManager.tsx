@@ -20,6 +20,7 @@ import {
   type PracticedPriceStatus,
 } from "@/lib/pricing";
 import type { CostSettings, Recipe, RecipeIngredient } from "@/lib/types/database";
+import { Card } from "@/components/Card";
 
 type IngredientOption = {
   id: string;
@@ -166,105 +167,187 @@ export function RecipeDetailManager({
   };
 
   return (
-    <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-3">
-        <h2 className="text-lg">Detalhes da receita</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-2">
-            <label className="text-sm font-medium">Nome do prato</label>
-            <input
-              value={recipeName}
-              onChange={(e) => setRecipeName(e.target.value)}
-              className={`${inputClass} mt-1`}
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium">% de perda</label>
-            <input
-              value={lossPct}
-              onChange={(e) => setLossPct(e.target.value)}
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              className={`${inputClass} mt-1`}
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium">Desconto/promoção (%)</label>
-            <input
-              value={discountPct}
-              onChange={(e) => setDiscountPct(e.target.value)}
-              type="number"
-              step="0.01"
-              min="0"
-              max="100"
-              className={`${inputClass} mt-1`}
-            />
-          </div>
-        </div>
+    <div className="flex h-full min-h-0 flex-1 flex-col gap-3">
+      {error && <p className="shrink-0 text-sm text-red-600">{error}</p>}
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-2">
-            <label className="text-sm font-medium">Preço praticado (R$)</label>
-            <input
-              value={practicedPrice}
-              onChange={(e) => setPracticedPrice(e.target.value)}
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="Opcional"
-              className={`${inputClass} mt-1`}
-            />
-            {practicedPriceStatus && (
-              <p
-                className={`mt-1 text-xs font-medium ${PRACTICED_PRICE_STATUS_STYLES[practicedPriceStatus].className}`}
+      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[auto_auto_minmax(0,1fr)_minmax(0,1fr)] gap-3 lg:grid-cols-2 lg:grid-rows-[auto_1fr] lg:gap-4">
+        <Card title="Detalhes da receita">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="lg:col-span-2">
+              <label className="text-sm font-medium">Nome do prato</label>
+              <input
+                value={recipeName}
+                onChange={(e) => setRecipeName(e.target.value)}
+                className={`${inputClass} mt-1`}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">% de perda</label>
+              <input
+                value={lossPct}
+                onChange={(e) => setLossPct(e.target.value)}
+                type="number"
+                step="0.01"
+                min="0"
+                max="100"
+                className={`${inputClass} mt-1`}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Desconto/promoção (%)</label>
+              <input
+                value={discountPct}
+                onChange={(e) => setDiscountPct(e.target.value)}
+                type="number"
+                step="0.01"
+                min="0"
+                max="100"
+                className={`${inputClass} mt-1`}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="lg:col-span-2">
+              <label className="text-sm font-medium">Preço praticado (R$)</label>
+              <input
+                value={practicedPrice}
+                onChange={(e) => setPracticedPrice(e.target.value)}
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="Opcional"
+                className={`${inputClass} mt-1`}
+              />
+              {practicedPriceStatus && (
+                <p
+                  className={`mt-1 text-xs font-medium ${PRACTICED_PRICE_STATUS_STYLES[practicedPriceStatus].className}`}
+                >
+                  {PRACTICED_PRICE_STATUS_STYLES[practicedPriceStatus].label}
+                </p>
+              )}
+            </div>
+            <div className="flex items-end lg:col-span-2 lg:justify-end">
+              <button
+                type="button"
+                onClick={saveDetails}
+                disabled={isSavingDetails}
+                className="w-full rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-active disabled:opacity-60 sm:w-auto"
               >
-                {PRACTICED_PRICE_STATUS_STYLES[practicedPriceStatus].label}
+                {isSavingDetails ? "Salvando..." : "Salvar"}
+              </button>
+            </div>
+          </div>
+        </Card>
+
+        <Card
+          title="Precificação sugerida"
+          description="Calculada a partir do custo dos insumos, da % de perda e das Configurações de Custos (sem taxa de plataforma)."
+          scrollable
+        >
+          {pricing.issue === "no_cost_settings" && (
+            <p className="text-sm text-amber-600 dark:text-amber-500">
+              Configure seus custos em{" "}
+              <Link href="/custos" className="underline">
+                Configurações de Custos
+              </Link>{" "}
+              para calcular o preço sugerido.
+            </p>
+          )}
+          {pricing.issue === "invalid_loss" && (
+            <p className="text-sm text-red-600">A % de perda precisa ser menor que 100%.</p>
+          )}
+          {pricing.issue === "revenue_below_fixed_costs" && (
+            <p className="text-sm text-red-600">{REVENUE_BELOW_FIXED_COSTS_WARNING}</p>
+          )}
+          {pricing.warning && (
+            <p className="text-sm text-amber-600 dark:text-amber-500">{pricing.warning}</p>
+          )}
+
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <Stat label="Custo da receita" value={formatCurrency(totalCost)} />
+            <Stat
+              label="Custo com perda"
+              value={pricing.costWithLoss !== null ? formatCurrency(pricing.costWithLoss) : "—"}
+            />
+            <Stat
+              label="Preço sugerido"
+              value={
+                pricing.suggestedPrice !== null ? formatCurrency(pricing.suggestedPrice) : "—"
+              }
+              highlight
+            />
+            <Stat
+              label="Lucro aproximado"
+              value={
+                pricing.approxProfitValue !== null && pricing.approxProfitPct !== null
+                  ? `${formatCurrency(pricing.approxProfitValue)} (${formatNumber(
+                      pricing.approxProfitPct,
+                      { minimumFractionDigits: 1, maximumFractionDigits: 1 }
+                    )}%)`
+                  : "—"
+              }
+            />
+          </div>
+
+          {discountPctNumber > 0 && suggestedPriceWithDiscount !== null && discountedMetrics && (
+            <div className="grid grid-cols-2 gap-4 border-t border-neutral-200 pt-4 sm:grid-cols-4 dark:border-neutral-800">
+              <Stat
+                label={`Preço com desconto (${formatNumber(discountPctNumber)}%)`}
+                value={formatCurrency(suggestedPriceWithDiscount)}
+                highlight
+              />
+              <Stat
+                label="Lucro com desconto"
+                value={`${formatCurrency(discountedMetrics.profitValue)} (${formatNumber(
+                  discountedMetrics.profitPct,
+                  { minimumFractionDigits: 1, maximumFractionDigits: 1 }
+                )}%)`}
+              />
+              <Stat
+                label="CMV com desconto"
+                value={`${formatNumber(discountedMetrics.cmvPct, {
+                  minimumFractionDigits: 1,
+                  maximumFractionDigits: 1,
+                })}%`}
+              />
+            </div>
+          )}
+        </Card>
+
+        <Card
+          title="Insumos da receita"
+          description="Busque um insumo já cadastrado e informe a quantidade líquida usada."
+          headerExtra={
+            availableIngredients.length === 0 ? (
+              <p className="text-sm text-neutral-400">
+                Você ainda não tem insumos cadastrados. Cadastre em &quot;Meus insumos&quot; antes
+                de montar receitas.
               </p>
-            )}
-          </div>
-          <div className="flex items-end lg:col-span-2 lg:justify-end">
-            <button
-              type="button"
-              onClick={saveDetails}
-              disabled={isSavingDetails}
-              className="w-full rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-active disabled:opacity-60 sm:w-auto"
-            >
-              {isSavingDetails ? "Salvando..." : "Salvar"}
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {error && <p className="text-sm text-red-600">{error}</p>}
-
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-lg">Insumos da receita</h2>
-          <p className="text-sm text-neutral-500">
-            Busque um insumo já cadastrado e informe a quantidade líquida usada.
-          </p>
-        </div>
-
-        {availableIngredients.length === 0 ? (
-          <p className="text-sm text-neutral-400">
-            Você ainda não tem insumos cadastrados. Cadastre em &quot;Meus insumos&quot; antes de
-            montar receitas.
-          </p>
-        ) : (
-          <AddRecipeIngredientForm
-            recipeId={recipe.id}
-            availableIngredients={availableIngredients}
-            onAdded={(item) => {
-              setError(null);
-              setItems((prev) => [...prev, item]);
-            }}
-            onError={setError}
-          />
-        )}
-
-        <div className="flex flex-col gap-2">
+            ) : (
+              <AddRecipeIngredientForm
+                recipeId={recipe.id}
+                availableIngredients={availableIngredients}
+                onAdded={(item) => {
+                  setError(null);
+                  setItems((prev) => [...prev, item]);
+                }}
+                onError={setError}
+              />
+            )
+          }
+          scrollable
+          footer={
+            <div className="flex justify-end">
+              <p className="text-sm text-neutral-500">
+                Custo total da receita:{" "}
+                <span className="rounded-md bg-neutral-900 px-2 py-1 font-mono text-sm font-semibold text-white dark:bg-white dark:text-neutral-900">
+                  {formatCurrency(totalCost)}
+                </span>
+              </p>
+            </div>
+          }
+        >
           {items.length === 0 && (
             <p className="text-sm text-neutral-400">
               Nenhum insumo adicionado a esta receita ainda.
@@ -289,173 +372,82 @@ export function RecipeDetailManager({
               onError={setError}
             />
           ))}
-        </div>
+        </Card>
 
-        <div className="flex justify-end border-t border-neutral-200 pt-4 dark:border-neutral-800">
-          <p className="text-sm text-neutral-500">
-            Custo total da receita:{" "}
-            <span className="rounded-md bg-neutral-900 px-2 py-1 font-mono text-sm font-semibold text-white dark:bg-white dark:text-neutral-900">
-              {formatCurrency(totalCost)}
-            </span>
-          </p>
-        </div>
-      </section>
-
-      <section className="flex flex-col gap-3 rounded-md border border-neutral-300 p-4 dark:border-neutral-700">
-        <div>
-          <h2 className="text-lg">Precificação sugerida</h2>
-          <p className="text-sm text-neutral-500">
-            Calculada a partir do custo dos insumos, da % de perda e das Configurações de Custos
-            (sem taxa de plataforma).
-          </p>
-        </div>
-
-        {pricing.issue === "no_cost_settings" && (
-          <p className="text-sm text-amber-600 dark:text-amber-500">
-            Configure seus custos em{" "}
-            <Link href="/custos" className="underline">
-              Configurações de Custos
-            </Link>{" "}
-            para calcular o preço sugerido.
-          </p>
-        )}
-        {pricing.issue === "invalid_loss" && (
-          <p className="text-sm text-red-600">A % de perda precisa ser menor que 100%.</p>
-        )}
-        {pricing.issue === "revenue_below_fixed_costs" && (
-          <p className="text-sm text-red-600">{REVENUE_BELOW_FIXED_COSTS_WARNING}</p>
-        )}
-        {pricing.warning && (
-          <p className="text-sm text-amber-600 dark:text-amber-500">{pricing.warning}</p>
-        )}
-
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <Stat label="Custo da receita" value={formatCurrency(totalCost)} />
-          <Stat
-            label="Custo com perda"
-            value={pricing.costWithLoss !== null ? formatCurrency(pricing.costWithLoss) : "—"}
-          />
-          <Stat
-            label="Preço sugerido"
-            value={
-              pricing.suggestedPrice !== null ? formatCurrency(pricing.suggestedPrice) : "—"
-            }
-            highlight
-          />
-          <Stat
-            label="Lucro aproximado"
-            value={
-              pricing.approxProfitValue !== null && pricing.approxProfitPct !== null
-                ? `${formatCurrency(pricing.approxProfitValue)} (${formatNumber(
-                    pricing.approxProfitPct,
-                    { minimumFractionDigits: 1, maximumFractionDigits: 1 }
-                  )}%)`
-                : "—"
-            }
-          />
-        </div>
-
-        {discountPctNumber > 0 && suggestedPriceWithDiscount !== null && discountedMetrics && (
-          <div className="grid grid-cols-2 gap-4 border-t border-neutral-200 pt-4 sm:grid-cols-4 dark:border-neutral-800">
-            <Stat
-              label={`Preço com desconto (${formatNumber(discountPctNumber)}%)`}
-              value={formatCurrency(suggestedPriceWithDiscount)}
-              highlight
-            />
-            <Stat
-              label="Lucro com desconto"
-              value={`${formatCurrency(discountedMetrics.profitValue)} (${formatNumber(
-                discountedMetrics.profitPct,
-                { minimumFractionDigits: 1, maximumFractionDigits: 1 }
-              )}%)`}
-            />
-            <Stat
-              label="CMV com desconto"
-              value={`${formatNumber(discountedMetrics.cmvPct, {
-                minimumFractionDigits: 1,
-                maximumFractionDigits: 1,
-              })}%`}
-            />
-          </div>
-        )}
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-lg">Preço por plataforma</h2>
-          <p className="text-sm text-neutral-500">
-            Preço para que, descontada a taxa de cada plataforma ativa, sobre o preço sugerido.
-          </p>
-        </div>
-
-        {pricing.suggestedPrice === null ? (
-          <p className="text-sm text-neutral-400">
-            Calcule o preço sugerido acima para ver o preço por plataforma.
-          </p>
-        ) : platforms.length === 0 ? (
-          <p className="text-sm text-neutral-400">
-            Nenhuma plataforma ativa cadastrada.{" "}
-            <Link href="/plataformas" className="underline">
-              Cadastre suas plataformas de delivery
-            </Link>
-            .
-          </p>
-        ) : (
-          <div className="overflow-x-auto rounded-md border border-neutral-200 dark:border-neutral-800">
-            <table className="w-full min-w-[560px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-neutral-200 bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
-                  <th className="px-3 py-2 font-medium">Plataforma</th>
-                  <th className="px-3 py-2 font-medium">Taxa</th>
-                  <th className="px-3 py-2 font-medium">Preço sugerido</th>
-                  {discountPctNumber > 0 && (
-                    <th className="px-3 py-2 font-medium">Preço com desconto</th>
-                  )}
-                  <th className="px-3 py-2 font-medium">Lucro</th>
-                  <th className="px-3 py-2 font-medium">CMV</th>
-                </tr>
-              </thead>
-              <tbody>
-                {platformRows.map(({ platform, price, priceWithDiscount, metrics }) => (
-                  <tr
-                    key={platform.id}
-                    className="border-b border-neutral-200 last:border-b-0 dark:border-neutral-800"
-                  >
-                    <td className="px-3 py-2 font-medium">{platform.name}</td>
-                    <td className="px-3 py-2 font-mono text-neutral-500">
-                      {formatNumber(platform.fee_pct)}%
-                    </td>
-                    <td className="px-3 py-2 font-mono">
-                      {price !== null ? formatCurrency(price) : "—"}
-                    </td>
+        <Card
+          title="Preço por plataforma"
+          description="Preço para que, descontada a taxa de cada plataforma ativa, sobre o preço sugerido."
+          scrollable
+        >
+          {pricing.suggestedPrice === null ? (
+            <p className="text-sm text-neutral-400">
+              Calcule o preço sugerido acima para ver o preço por plataforma.
+            </p>
+          ) : platforms.length === 0 ? (
+            <p className="text-sm text-neutral-400">
+              Nenhuma plataforma ativa cadastrada.{" "}
+              <Link href="/plataformas" className="underline">
+                Cadastre suas plataformas de delivery
+              </Link>
+              .
+            </p>
+          ) : (
+            <div className="overflow-x-auto rounded-md border border-neutral-200 dark:border-neutral-800">
+              <table className="w-full min-w-[560px] border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-neutral-200 bg-neutral-50 text-left text-xs uppercase tracking-wide text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
+                    <th className="px-3 py-2 font-medium">Plataforma</th>
+                    <th className="px-3 py-2 font-medium">Taxa</th>
+                    <th className="px-3 py-2 font-medium">Preço sugerido</th>
                     {discountPctNumber > 0 && (
-                      <td className="px-3 py-2 font-mono">
-                        {priceWithDiscount !== null ? formatCurrency(priceWithDiscount) : "—"}
-                      </td>
+                      <th className="px-3 py-2 font-medium">Preço com desconto</th>
                     )}
-                    <td className="px-3 py-2 font-mono">
-                      {metrics
-                        ? `${formatCurrency(metrics.profitValue)} (${formatNumber(
-                            metrics.profitPct,
-                            { minimumFractionDigits: 1, maximumFractionDigits: 1 }
-                          )}%)`
-                        : "—"}
-                    </td>
-                    <td className="px-3 py-2 font-mono text-neutral-500">
-                      {metrics
-                        ? `${formatNumber(metrics.cmvPct, {
-                            minimumFractionDigits: 1,
-                            maximumFractionDigits: 1,
-                          })}%`
-                        : "—"}
-                    </td>
+                    <th className="px-3 py-2 font-medium">Lucro</th>
+                    <th className="px-3 py-2 font-medium">CMV</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+                </thead>
+                <tbody>
+                  {platformRows.map(({ platform, price, priceWithDiscount, metrics }) => (
+                    <tr
+                      key={platform.id}
+                      className="border-b border-neutral-200 last:border-b-0 dark:border-neutral-800"
+                    >
+                      <td className="px-3 py-2 font-medium">{platform.name}</td>
+                      <td className="px-3 py-2 font-mono text-neutral-500">
+                        {formatNumber(platform.fee_pct)}%
+                      </td>
+                      <td className="px-3 py-2 font-mono">
+                        {price !== null ? formatCurrency(price) : "—"}
+                      </td>
+                      {discountPctNumber > 0 && (
+                        <td className="px-3 py-2 font-mono">
+                          {priceWithDiscount !== null ? formatCurrency(priceWithDiscount) : "—"}
+                        </td>
+                      )}
+                      <td className="px-3 py-2 font-mono">
+                        {metrics
+                          ? `${formatCurrency(metrics.profitValue)} (${formatNumber(
+                              metrics.profitPct,
+                              { minimumFractionDigits: 1, maximumFractionDigits: 1 }
+                            )}%)`
+                          : "—"}
+                      </td>
+                      <td className="px-3 py-2 font-mono text-neutral-500">
+                        {metrics
+                          ? `${formatNumber(metrics.cmvPct, {
+                              minimumFractionDigits: 1,
+                              maximumFractionDigits: 1,
+                            })}%`
+                          : "—"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }
