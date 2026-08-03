@@ -82,6 +82,14 @@ export type MonthlyRevenue = {
   updated_at: string;
 };
 
+export type DeliveryCostSettings = {
+  id: string;
+  user_id: string;
+  monthly_orders: number;
+  delivery_value: number;
+  updated_at: string;
+};
+
 export type Subscription = {
   id: string;
   user_id: string;
@@ -159,6 +167,12 @@ export type Database = {
         Row: MonthlyRevenue;
         Insert: Partial<MonthlyRevenue> & { user_id: string; year: number; month: number; value: number };
         Update: Partial<MonthlyRevenue>;
+        Relationships: [];
+      };
+      delivery_cost_settings: {
+        Row: DeliveryCostSettings;
+        Insert: Partial<DeliveryCostSettings> & { user_id: string };
+        Update: Partial<DeliveryCostSettings>;
         Relationships: [];
       };
     };

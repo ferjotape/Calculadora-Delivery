@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition, type SVGProps } from "react";
 import {
   useFieldArray,
@@ -344,9 +345,12 @@ function ReadOnlyPercentField({
     <div className="grid grid-cols-[1fr_7rem] items-center gap-3 rounded-md border border-neutral-300 bg-neutral-50 px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900">
       <label htmlFor={id} className="text-sm font-medium text-neutral-500">
         {label}
-        <span className="block text-xs font-normal text-neutral-400">
+        <Link
+          href="/custo-motoboy"
+          className="block text-xs font-normal text-neutral-400 underline-offset-2 hover:underline"
+        >
           Preenchido em Custo Motoboy
-        </span>
+        </Link>
       </label>
       <span id={id} className="text-right font-mono text-sm text-neutral-500">
         {value > 0 ? `${formatNumber(value, { maximumFractionDigits: 2 })}%` : "—"}

@@ -7,11 +7,19 @@ import { logout } from "@/app/auth/actions";
 import { Logo } from "./Logo";
 import { LogoutButton } from "./LogoutButton";
 
-type AppNavKey = "dashboard" | "recipes" | "ingredients" | "platforms" | "costs" | "billing";
+type AppNavKey =
+  | "dashboard"
+  | "recipes"
+  | "ingredients"
+  | "platforms"
+  | "costs"
+  | "motoboy"
+  | "billing";
 
 const NAV_ITEMS: { key: AppNavKey; label: string; href: string; Icon: IconComponent }[] = [
   { key: "dashboard", label: "Dashboard", href: "/dashboard", Icon: DashboardIcon },
   { key: "costs", label: "Custos", href: "/custos", Icon: CostsIcon },
+  { key: "motoboy", label: "Custo Motoboy", href: "/custo-motoboy", Icon: MotoboyIcon },
   { key: "ingredients", label: "Insumos", href: "/insumos", Icon: IngredientsIcon },
   { key: "recipes", label: "Receitas", href: "/receitas", Icon: RecipesIcon },
   { key: "platforms", label: "Plataformas", href: "/plataformas", Icon: PlatformsIcon },
@@ -24,6 +32,7 @@ function getActiveKey(pathname: string): AppNavKey | null {
   if (pathname.startsWith("/insumos")) return "ingredients";
   if (pathname.startsWith("/plataformas")) return "platforms";
   if (pathname.startsWith("/billing")) return "billing";
+  if (pathname.startsWith("/custo-motoboy")) return "motoboy";
   if (pathname === "/custos") return "costs";
   return null;
 }
@@ -272,6 +281,23 @@ function CostsIcon(props: SVGProps<SVGSVGElement>) {
         d="M12 10.2H16.5V13.2H12C11.17 13.2 10.5 12.53 10.5 11.7C10.5 10.87 11.17 10.2 12 10.2Z"
         fill="currentColor"
       />
+    </svg>
+  );
+}
+
+function MotoboyIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <circle cx="5" cy="15" r="2.3" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="15.5" cy="15" r="2.3" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M5 15L8 9H12.5L15.5 15M8 9L7 6.5H5.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M10.5 9L12 12.5H15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
     </svg>
   );
 }
