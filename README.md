@@ -30,7 +30,7 @@ A `SUPABASE_SERVICE_ROLE_KEY` (Project Settings → API → service_role) é usa
 
 5. Configure o Stripe:
    - Crie uma conta em [stripe.com](https://stripe.com) e pegue a chave secreta (modo teste) em Developers → API keys → `STRIPE_SECRET_KEY`.
-   - Não é necessário criar um Produto/Preço manualmente: o preço (R$ 149,90/mês, 7 dias de teste grátis) é criado dinamicamente a cada checkout — veja `src/lib/stripe/plan.ts`.
+   - Não é necessário criar um Produto/Preço manualmente: o preço (R$ 89,90/mês, 7 dias de teste grátis) é criado dinamicamente a cada checkout — veja `src/lib/stripe/plan.ts`.
    - Configure um webhook (Developers → Webhooks) apontando para `<sua-url>/api/stripe/webhook`, escutando pelo menos os eventos `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated` e `customer.subscription.deleted`. Copie o "Signing secret" para `STRIPE_WEBHOOK_SECRET`.
    - Em desenvolvimento local, use o [Stripe CLI](https://docs.stripe.com/stripe-cli) para encaminhar eventos: `stripe listen --forward-to localhost:3000/api/stripe/webhook` (o comando imprime um signing secret temporário para usar em `STRIPE_WEBHOOK_SECRET` local).
    - Defina `NEXT_PUBLIC_SITE_URL` com a URL pública do app (usada nas URLs de retorno do Checkout).
@@ -62,7 +62,7 @@ Todas as tabelas têm Row Level Security habilitada: cada usuário só enxerga (
 
 ## Assinatura
 
-- Plano único mensal de R$ 149,90 com 7 dias de teste grátis (`src/lib/stripe/plan.ts`).
+- Plano único mensal de R$ 89,90 com 7 dias de teste grátis (`src/lib/stripe/plan.ts`).
 - `/billing` ("Minha assinatura") mostra status e data de renovação, e permite iniciar o checkout do Stripe.
 - `/dashboard`, `/onboarding/ingredients` e `/onboarding/recipes` (lista e detalhe) exigem assinatura ativa/em teste — sem isso, o usuário é redirecionado para `/billing`.
 - `/onboarding` (Configurações de Custos) e `/onboarding/platforms` permanecem acessíveis mesmo sem assinatura ativa.
