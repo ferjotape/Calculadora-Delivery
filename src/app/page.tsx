@@ -357,6 +357,15 @@ function LandingFooter() {
           Fale com a gente
         </a>
       </p>
+      <p className="text-xs text-neutral-400">
+        <Link href="/termos-de-uso" className="hover:underline">
+          Termos de Uso
+        </Link>{" "}
+        ·{" "}
+        <Link href="/politica-de-privacidade" className="hover:underline">
+          Política de Privacidade
+        </Link>
+      </p>
       <p className="text-xs text-neutral-400">© {new Date().getFullYear()} CUSTTO</p>
     </footer>
   );

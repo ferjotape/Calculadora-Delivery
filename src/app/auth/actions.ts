@@ -40,13 +40,21 @@ export async function signup(_prevState: AuthState, formData: FormData): Promise
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const restaurantName = String(formData.get("restaurant_name") ?? "");
+  const termsAccepted = formData.get("terms_accepted") === "on";
+
+  if (!termsAccepted) {
+    return { error: "Você precisa aceitar os Termos de Uso e a Política de Privacidade." };
+  }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { restaurant_name: restaurantName },
+      data: {
+        restaurant_name: restaurantName,
+        terms_accepted_at: new Date().toISOString(),
+      },
     },
   });
 

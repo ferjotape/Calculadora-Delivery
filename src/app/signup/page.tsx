@@ -64,6 +64,26 @@ export default function SignupPage() {
             />
           </div>
 
+          <div className="flex items-start gap-2">
+            <input
+              id="terms_accepted"
+              name="terms_accepted"
+              type="checkbox"
+              required
+              className="mt-0.5 h-4 w-4 shrink-0 rounded border-neutral-300 text-accent focus:ring-accent dark:border-neutral-700"
+            />
+            <label htmlFor="terms_accepted" className="text-sm text-neutral-600 dark:text-neutral-400">
+              Li e aceito os{" "}
+              <Link href="/termos-de-uso" target="_blank" className="font-medium underline">
+                Termos de Uso
+              </Link>{" "}
+              e a{" "}
+              <Link href="/politica-de-privacidade" target="_blank" className="font-medium underline">
+                Política de Privacidade
+              </Link>
+            </label>
+          </div>
+
           {state.error && <p className="text-sm text-red-600">{state.error}</p>}
 
           <button

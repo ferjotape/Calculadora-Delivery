@@ -75,10 +75,19 @@ export function AppSidebar() {
           ))}
         </nav>
 
-        <div className="mt-auto border-t border-neutral-200 pt-4 dark:border-neutral-800">
+        <div className="mt-auto flex flex-col gap-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">
           <form action={logout}>
             <LogoutButton />
           </form>
+          <p className="px-3 text-xs text-neutral-400">
+            <Link href="/termos-de-uso" className="hover:underline">
+              Termos de Uso
+            </Link>{" "}
+            ·{" "}
+            <Link href="/politica-de-privacidade" className="hover:underline">
+              Privacidade
+            </Link>
+          </p>
         </div>
       </aside>
 

@@ -9,6 +9,7 @@ export type Profile = {
   email: string | null;
   is_admin: boolean;
   created_at: string;
+  terms_accepted_at: string | null;
 };
 
 export type CostSettings = {
