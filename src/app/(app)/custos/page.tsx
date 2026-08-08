@@ -6,7 +6,18 @@ import { computeCostSettingsSummary, REVENUE_BELOW_FIXED_COSTS_WARNING } from "@
 import type { CostSettingsInput } from "@/lib/validation/cost-settings";
 import { ScreenHeader } from "@/components/ScreenHeader";
 
-export default async function CustosPage() {
+type Props = {
+  searchParams: Promise<{ year?: string }>;
+};
+
+function buildMonthlyValues(rows: { month: number; value: number }[] | null | undefined) {
+  return Array.from({ length: 12 }, (_, i) => {
+    const row = rows?.find((r) => r.month === i + 1);
+    return row ? row.value : null;
+  });
+}
+
+export default async function CustosPage({ searchParams }: Props) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -16,16 +27,28 @@ export default async function CustosPage() {
     redirect("/login");
   }
 
-  const year = new Date().getFullYear();
+  const currentYear = new Date().getFullYear();
+  const { year: yearParam } = await searchParams;
+  const requestedYear = yearParam ? parseInt(yearParam, 10) : currentYear;
+  const viewYear =
+    Number.isFinite(requestedYear) && requestedYear <= currentYear ? requestedYear : currentYear;
 
-  const [{ data: costSettings }, { data: monthlyRevenueRows }] = await Promise.all([
-    supabase.from("cost_settings").select("*").eq("user_id", user.id).maybeSingle(),
-    supabase
-      .from("monthly_revenue")
-      .select("month, value")
-      .eq("user_id", user.id)
-      .eq("year", year),
-  ]);
+  const [{ data: costSettings }, { data: currentYearRows }, { data: viewYearRows }] =
+    await Promise.all([
+      supabase.from("cost_settings").select("*").eq("user_id", user.id).maybeSingle(),
+      supabase
+        .from("monthly_revenue")
+        .select("month, value")
+        .eq("user_id", user.id)
+        .eq("year", currentYear),
+      viewYear === currentYear
+        ? Promise.resolve({ data: null })
+        : supabase
+            .from("monthly_revenue")
+            .select("month, value")
+            .eq("user_id", user.id)
+            .eq("year", viewYear),
+    ]);
 
   const defaultValues: CostSettingsInput = {
     fixed_costs: costSettings?.fixed_costs ?? [],
@@ -36,10 +59,8 @@ export default async function CustosPage() {
     avg_monthly_revenue: costSettings?.avg_monthly_revenue ?? null,
   };
 
-  const initialMonthlyValues: (number | null)[] = Array.from({ length: 12 }, (_, i) => {
-    const row = monthlyRevenueRows?.find((r) => r.month === i + 1);
-    return row ? row.value : null;
-  });
+  const currentYearValues = buildMonthlyValues(currentYearRows);
+  const viewYearValues = viewYear === currentYear ? currentYearValues : buildMonthlyValues(viewYearRows);
 
   const costSummary = computeCostSettingsSummary(costSettings ?? null);
 
@@ -58,8 +79,10 @@ export default async function CustosPage() {
 
       <CostSettingsForm
         defaultValues={defaultValues}
-        year={year}
-        initialMonthlyValues={initialMonthlyValues}
+        currentYear={currentYear}
+        viewYear={viewYear}
+        currentYearValues={currentYearValues}
+        viewYearValues={viewYearValues}
       />
 
       <div className="flex shrink-0 justify-end border-t border-neutral-200 pt-3 dark:border-neutral-800">

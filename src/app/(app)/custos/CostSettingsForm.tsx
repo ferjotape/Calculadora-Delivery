@@ -19,8 +19,10 @@ import type { FixedCost } from "@/lib/types/database";
 
 type Props = {
   defaultValues: CostSettingsInput;
-  year: number;
-  initialMonthlyValues: (number | null)[];
+  currentYear: number;
+  viewYear: number;
+  currentYearValues: (number | null)[];
+  viewYearValues: (number | null)[];
 };
 
 const MONTH_LABELS = [
@@ -51,12 +53,21 @@ const nameInputClass =
 const valueInputClass =
   "w-full rounded-md border border-neutral-300 px-2 py-2 text-right text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:focus:border-neutral-100";
 
-export function CostSettingsForm({ defaultValues, year, initialMonthlyValues }: Props) {
+export function CostSettingsForm({
+  defaultValues,
+  currentYear,
+  viewYear,
+  currentYearValues,
+  viewYearValues,
+}: Props) {
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(
     null
   );
-  const [monthlyValues, setMonthlyValues] = useState<(number | null)[]>(initialMonthlyValues);
+  // Sempre o ano corrente, editável — independe de qual ano está sendo visualizado abaixo.
+  const [monthlyValues, setMonthlyValues] = useState<(number | null)[]>(currentYearValues);
+  const isCurrentYearView = viewYear === currentYear;
+  const displayedValues = isCurrentYearView ? monthlyValues : viewYearValues;
 
   const {
     register,
@@ -75,10 +86,18 @@ export function CostSettingsForm({ defaultValues, year, initialMonthlyValues }: 
 
   const watchedValues = useWatch({ control, defaultValue: defaultValues });
 
-  const filledMonthlyValues = monthlyValues.filter((v): v is number => v !== null);
-  const totalMonthlyRevenue = filledMonthlyValues.reduce((sum, v) => sum + v, 0);
+  // Markup usa sempre o ano corrente, mesmo enquanto o bloco abaixo exibe outro ano.
+  const filledCurrentYearValues = monthlyValues.filter((v): v is number => v !== null);
   const avgMonthlyRevenue =
-    filledMonthlyValues.length > 0 ? totalMonthlyRevenue / filledMonthlyValues.length : null;
+    filledCurrentYearValues.length > 0
+      ? filledCurrentYearValues.reduce((sum, v) => sum + v, 0) / filledCurrentYearValues.length
+      : null;
+
+  // Média/total exibidos no bloco refletem o ano sendo visualizado (pode ser histórico).
+  const filledDisplayedValues = displayedValues.filter((v): v is number => v !== null);
+  const totalDisplayedRevenue = filledDisplayedValues.reduce((sum, v) => sum + v, 0);
+  const avgDisplayedRevenue =
+    filledDisplayedValues.length > 0 ? totalDisplayedRevenue / filledDisplayedValues.length : null;
 
   const watchedFixedCosts: FixedCost[] = (watchedValues.fixed_costs ?? []).map((item) => ({
     name: item?.name ?? "",
@@ -112,7 +131,7 @@ export function CostSettingsForm({ defaultValues, year, initialMonthlyValues }: 
           free_delivery_pct: defaultValues.free_delivery_pct,
           avg_monthly_revenue: avgMonthlyRevenue,
         }),
-        saveMonthlyRevenue({ year, values: monthlyValues }),
+        saveMonthlyRevenue({ year: currentYear, values: monthlyValues }),
       ]);
 
       if (!costResult.success || !revenueResult.success) {
@@ -241,7 +260,37 @@ export function CostSettingsForm({ defaultValues, year, initialMonthlyValues }: 
           title="Faturamento anual"
           description="Informe o faturamento de cada mês para calcular a média usada no markup."
           className="lg:col-span-2"
+          headerExtra={
+            <div className="flex items-center justify-between gap-2">
+              <Link
+                href={`/custos?year=${viewYear - 1}`}
+                className="rounded-md px-2 py-1 text-sm text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900"
+              >
+                ← {viewYear - 1}
+              </Link>
+              <span className="text-sm font-medium">{viewYear}</span>
+              {viewYear < currentYear ? (
+                <Link
+                  href={`/custos?year=${viewYear + 1}`}
+                  className="rounded-md px-2 py-1 text-sm text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900"
+                >
+                  {viewYear + 1} →
+                </Link>
+              ) : (
+                <span className="px-2 py-1 text-sm text-neutral-300 dark:text-neutral-700">
+                  {viewYear + 1} →
+                </span>
+              )}
+            </div>
+          }
         >
+          {!isCurrentYearView && (
+            <p className="rounded-md bg-neutral-50 px-3 py-2 text-xs text-neutral-500 dark:bg-neutral-900">
+              Visualizando {viewYear} — somente leitura. O markup sempre usa o faturamento de{" "}
+              {currentYear}.
+            </p>
+          )}
+
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
             {MONTH_LABELS.map((label, index) => (
               <div key={label} className="flex flex-col gap-1">
@@ -254,10 +303,13 @@ export function CostSettingsForm({ defaultValues, year, initialMonthlyValues }: 
                   inputMode="decimal"
                   step="0.01"
                   min="0"
-                  placeholder="R$ 0,00"
-                  value={monthlyValues[index] ?? ""}
-                  onChange={(e) => handleMonthChange(index, e.target.value)}
-                  className={valueInputClass}
+                  placeholder="—"
+                  disabled={!isCurrentYearView}
+                  value={displayedValues[index] ?? ""}
+                  onChange={
+                    isCurrentYearView ? (e) => handleMonthChange(index, e.target.value) : undefined
+                  }
+                  className={`${valueInputClass} ${!isCurrentYearView ? "bg-neutral-50 text-neutral-500 dark:bg-neutral-900" : ""}`}
                 />
               </div>
             ))}
@@ -267,14 +319,21 @@ export function CostSettingsForm({ defaultValues, year, initialMonthlyValues }: 
             <div className="flex flex-col gap-1 rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700">
               <span className="text-xs text-neutral-500">Média mensal</span>
               <span className="font-mono text-base">
-                {avgMonthlyRevenue !== null ? formatCurrency(avgMonthlyRevenue) : "—"}
+                {avgDisplayedRevenue !== null ? formatCurrency(avgDisplayedRevenue) : "—"}
               </span>
             </div>
             <div className="flex flex-col gap-1 rounded-md border border-neutral-300 px-3 py-2 dark:border-neutral-700">
               <span className="text-xs text-neutral-500">Total faturado</span>
-              <span className="font-mono text-base">{formatCurrency(totalMonthlyRevenue)}</span>
+              <span className="font-mono text-base">{formatCurrency(totalDisplayedRevenue)}</span>
             </div>
           </div>
+
+          {isCurrentYearView && avgDisplayedRevenue === null && (
+            <p className="px-1 text-xs text-neutral-400">
+              Sem dados ainda — restaurantes desse porte costumam faturar entre R$ 2.000 e R$
+              10.000/mês. Preencha ao menos um mês para calcular sua média real.
+            </p>
+          )}
         </Card>
       </div>
 
