@@ -185,6 +185,56 @@ h3 {
   transform: translateY(0) scale(1);
 }
 
+/* === components/ui/habit-faq-scroller: loop horizontal de cards de FAQ === */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scroll-horizontal {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes scroll-horizontal-reverse {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-scroll-horizontal {
+  animation: scroll-horizontal var(--scroll-duration, 40s) linear infinite;
+}
+
+.animate-scroll-horizontal-reverse {
+  animation: scroll-horizontal-reverse var(--scroll-duration, 40s) linear infinite;
+}
+
+/* Pausa o loop enquanto o mouse está sobre a linha, pra dar tempo de ler. */
+.group:hover .animate-scroll-horizontal,
+.group:hover .animate-scroll-horizontal-reverse {
+  animation-play-state: paused;
+}
+
+/* Esmaece as bordas da linha de cards em vez de cortar bruscamente. */
+.scroller-mask {
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .whatsapp-pulse {
     animation: none;
@@ -199,5 +249,10 @@ h3 {
     opacity: 1;
     transform: none;
     transition: none;
+  }
+
+  .animate-scroll-horizontal,
+  .animate-scroll-horizontal-reverse {
+    animation: none;
   }
 }
