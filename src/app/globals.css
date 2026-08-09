@@ -235,6 +235,16 @@ h3 {
   -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
 }
 
+/* === components/FaqCarousel: esconde a scrollbar nativa (o carrossel já tem dots) === */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .whatsapp-pulse {
     animation: none;

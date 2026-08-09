@@ -1,10 +1,12 @@
+import fs from "node:fs";
+import path from "node:path";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import type { SVGProps } from "react";
 import { Logo } from "@/components/Logo";
 import { Reveal } from "@/components/Reveal";
-import { FaqCard, HorizontalScroller } from "@/components/ui/habit-faq-scroller";
+import { FaqCarousel } from "@/components/FaqCarousel";
 import { formatCurrency } from "@/lib/format";
 import { SUBSCRIPTION_PRICE_BRL_CENTS, SUBSCRIPTION_TRIAL_DAYS } from "@/lib/stripe/plan";
 
@@ -156,20 +158,87 @@ const STEPS = [
   {
     title: "Cadastre seus custos",
     description: "Custos fixos, variáveis e o lucro que você quer ter em cada venda.",
+    imageSrc: "/landing/custos-preview.png",
+    imageAlt: "Tela de Configurações de Custos do CUSTTO, com custos fixos, variáveis e markup ideal",
+  },
+  {
+    title: "Calcule o custo do motoboy",
+    description:
+      "Ticket médio e custo da entrega grátis calculados a partir do seu faturamento e do número de pedidos do mês.",
+    imageSrc: "/landing/custo-motoboy-preview.png",
+    imageAlt: "Tela de Custo Motoboy do CUSTTO, com ticket médio e percentual de custo da entrega grátis",
   },
   {
     title: "Cadastre seus insumos",
     description: "Preço pago, volume comprado e fator de correção — o custo unitário sai sozinho.",
+    imageSrc: "/landing/insumos-preview.png",
+    imageAlt: "Tela de Insumos do CUSTTO com a lista de ingredientes cadastrados e o custo unitário calculado",
   },
   {
     title: "Monte suas receitas",
     description: "Some os insumos de cada prato e o sistema calcula o custo total automaticamente.",
+    imageSrc: "/landing/receitas-preview.png",
+    imageAlt: "Tela de Receitas do CUSTTO com a lista de pratos cadastrados e o custo de cada um",
   },
   {
-    title: "Receba o preço ideal",
-    description: "Preço sugerido, por plataforma de delivery, com desconto e cupom simulados.",
+    title: "Configure suas plataformas",
+    description:
+      "Taxa de cada plataforma de delivery (iFood, 99Food, Keeta e outras) pra ajustar o preço automaticamente.",
+    imageSrc: "/landing/plataformas-preview.png",
+    imageAlt: "Tela de Plataformas do CUSTTO com as taxas de cada plataforma de delivery cadastrada",
+  },
+  {
+    title: "Veja tudo no dashboard",
+    description:
+      "Preço sugerido, por plataforma de delivery, com desconto e cupom simulados — tudo centralizado.",
+    imageSrc: "/landing/dashboard-preview.png",
+    imageAlt:
+      "Dashboard do CUSTTO mostrando receitas cadastradas, custos totais, markup atual e o preço de cada prato",
   },
 ];
+
+/**
+ * Se o print ainda não foi enviado pro /public, mostra um placeholder com as
+ * mesmas dimensões em vez de deixar o next/image quebrado — assim que o
+ * arquivo for adicionado em /public/landing com o nome certo, o próximo
+ * build já passa a exibir a imagem real, sem precisar mexer no código.
+ */
+function StepScreenshot({
+  src,
+  alt,
+  label,
+}: {
+  src: string;
+  alt: string;
+  label: string;
+}) {
+  const fileExists = fs.existsSync(path.join(process.cwd(), "public", src));
+
+  if (!fileExists) {
+    return (
+      <div
+        role="img"
+        aria-label={`Espaço reservado para o print da tela: ${label}`}
+        className="flex aspect-[800/482] w-full items-center justify-center rounded-xl border border-dashed border-neutral-300 bg-neutral-50 px-4 text-center text-xs text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900"
+      >
+        Print: {label}
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-neutral-300 dark:border-neutral-700">
+      <Image
+        src={src}
+        alt={alt}
+        width={800}
+        height={482}
+        sizes="(min-width: 640px) 440px, 100vw"
+        className="w-full"
+      />
+    </div>
+  );
+}
 
 function HowItWorksSection() {
   return (
@@ -177,7 +246,9 @@ function HowItWorksSection() {
       <div className="mx-auto flex max-w-4xl flex-col gap-10">
         <Reveal className="text-center">
           <p className="font-mono text-xs uppercase tracking-wide text-accent">Como funciona</p>
-          <h2 className="mt-2 text-2xl sm:text-3xl">Do custo ao preço certo em 4 passos</h2>
+          <h2 className="mt-2 text-2xl sm:text-3xl">
+            Do custo ao preço certo em {STEPS.length} passos
+          </h2>
         </Reveal>
 
         <ol className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -186,30 +257,24 @@ function HowItWorksSection() {
               key={step.title}
               as="li"
               delayMs={index * 80}
-              className="flex gap-4 rounded-md border border-neutral-300 p-5 dark:border-neutral-700"
+              className="flex flex-col gap-4 rounded-md border border-neutral-300 p-5 dark:border-neutral-700"
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 font-mono text-sm font-semibold text-white dark:bg-white dark:text-neutral-900">
-                {index + 1}
-              </span>
-              <div>
-                <h3 className="font-medium">{step.title}</h3>
-                <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-                  {step.description}
-                </p>
+              <div className="flex gap-4">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-neutral-900 font-mono text-sm font-semibold text-white dark:bg-white dark:text-neutral-900">
+                  {index + 1}
+                </span>
+                <div>
+                  <h3 className="font-medium">{step.title}</h3>
+                  <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+                    {step.description}
+                  </p>
+                </div>
               </div>
+
+              <StepScreenshot src={step.imageSrc} alt={step.imageAlt} label={step.title} />
             </Reveal>
           ))}
         </ol>
-
-        <Reveal variant="scale" className="overflow-hidden rounded-xl border border-neutral-300 dark:border-neutral-700">
-          <Image
-            src="/landing/dashboard-preview.png"
-            alt="Dashboard do CUSTTO mostrando receitas cadastradas, custos totais, markup atual e o preço de cada prato"
-            width={800}
-            height={482}
-            className="w-full"
-          />
-        </Reveal>
       </div>
     </section>
   );
@@ -294,28 +359,19 @@ const FAQ_ITEMS = [
   },
 ];
 
-const FAQ_ROWS: { speed: string; direction: "left" | "right"; items: typeof FAQ_ITEMS }[] = [
-  { speed: "55s", direction: "left", items: FAQ_ITEMS.slice(0, 3) },
-  { speed: "45s", direction: "right", items: FAQ_ITEMS.slice(3) },
-];
-
 function FaqSection() {
+  const items = FAQ_ITEMS.map((item, index) => ({ id: `faq-${index}`, ...item }));
+
   return (
     <section className="px-4 py-14 sm:px-6 sm:py-20">
-      <div className="mx-auto flex max-w-6xl flex-col gap-10">
+      <div className="mx-auto flex max-w-4xl flex-col gap-8">
         <Reveal className="text-center">
           <p className="font-mono text-xs uppercase tracking-wide text-accent">Dúvidas</p>
           <h2 className="mt-2 text-2xl sm:text-3xl">Perguntas frequentes</h2>
         </Reveal>
 
-        <Reveal delayMs={80} className="flex flex-col gap-6">
-          {FAQ_ROWS.map((row, rowIndex) => (
-            <HorizontalScroller key={rowIndex} speed={row.speed} direction={row.direction}>
-              {row.items.map((item) => (
-                <FaqCard key={item.question} question={item.question} answer={item.answer} />
-              ))}
-            </HorizontalScroller>
-          ))}
+        <Reveal delayMs={80}>
+          <FaqCarousel items={items} />
         </Reveal>
       </div>
     </section>
