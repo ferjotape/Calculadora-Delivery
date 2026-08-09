@@ -8,9 +8,9 @@ type FaqCardProps = {
 /** Card reutilizável pra um item de FAQ. */
 export function FaqCard({ question, answer }: FaqCardProps) {
   return (
-    <div className="flex flex-col items-start gap-4 p-6 bg-white rounded-lg shadow-lg w-96 flex-shrink-0 faq-card">
-      <h3 className="text-xl font-bold text-black faq-title">{question}</h3>
-      <p className="text-lg text-gray-700 faq-answer">{answer}</p>
+    <div className="flex flex-col items-start gap-4 rounded-xl border border-neutral-300 bg-background p-6 w-96 flex-shrink-0 faq-card dark:border-neutral-700">
+      <h3 className="text-xl font-medium faq-title">{question}</h3>
+      <p className="text-base text-neutral-600 dark:text-neutral-400 faq-answer">{answer}</p>
     </div>
   );
 }
@@ -79,13 +79,13 @@ export default function FaqSection({ data }: FaqSectionProps) {
     <div className="relative flex flex-col items-center gap-12 p-10 w-full max-w-6xl">
       <div className="flex flex-col items-center gap-6 text-center z-10 max-w-2xl">
         <h2
-          className="text-5xl font-bold text-black leading-tight"
+          className="text-4xl leading-tight"
           style={{ opacity: 0, animation: "fadeInUp 0.7s ease-out 0.2s forwards" }}
         >
           {data.mainTitle}
         </h2>
         <p
-          className="text-lg text-gray-700"
+          className="text-lg text-neutral-600 dark:text-neutral-400"
           style={{ opacity: 0, animation: "fadeInUp 0.7s ease-out 0.4s forwards" }}
         >
           {data.mainSubtitle}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { SVGProps } from "react";
 import { Logo } from "@/components/Logo";
 import { Reveal } from "@/components/Reveal";
+import { FaqCard, HorizontalScroller } from "@/components/ui/habit-faq-scroller";
 import { formatCurrency } from "@/lib/format";
 import { SUBSCRIPTION_PRICE_BRL_CENTS, SUBSCRIPTION_TRIAL_DAYS } from "@/lib/stripe/plan";
 
@@ -293,30 +294,29 @@ const FAQ_ITEMS = [
   },
 ];
 
+const FAQ_ROWS: { speed: string; direction: "left" | "right"; items: typeof FAQ_ITEMS }[] = [
+  { speed: "55s", direction: "left", items: FAQ_ITEMS.slice(0, 3) },
+  { speed: "45s", direction: "right", items: FAQ_ITEMS.slice(3) },
+];
+
 function FaqSection() {
   return (
     <section className="px-4 py-14 sm:px-6 sm:py-20">
-      <div className="mx-auto flex max-w-2xl flex-col gap-8">
+      <div className="mx-auto flex max-w-6xl flex-col gap-10">
         <Reveal className="text-center">
           <p className="font-mono text-xs uppercase tracking-wide text-accent">Dúvidas</p>
           <h2 className="mt-2 text-2xl sm:text-3xl">Perguntas frequentes</h2>
         </Reveal>
 
-        <div className="flex flex-col gap-3">
-          {FAQ_ITEMS.map((item, index) => (
-            <Reveal key={item.question} delayMs={Math.min(index, 4) * 60}>
-              <details className="group rounded-md border border-neutral-300 p-4 dark:border-neutral-700">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-medium marker:content-none [&::-webkit-details-marker]:hidden">
-                  {item.question}
-                  <ChevronIcon className="h-4 w-4 shrink-0 text-neutral-400 transition-transform group-open:rotate-180" />
-                </summary>
-                <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-400">
-                  {item.answer}
-                </p>
-              </details>
-            </Reveal>
+        <Reveal delayMs={80} className="flex flex-col gap-6">
+          {FAQ_ROWS.map((row, rowIndex) => (
+            <HorizontalScroller key={rowIndex} speed={row.speed} direction={row.direction}>
+              {row.items.map((item) => (
+                <FaqCard key={item.question} question={item.question} answer={item.answer} />
+              ))}
+            </HorizontalScroller>
           ))}
-        </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -400,20 +400,6 @@ function CheckIcon(props: SVGProps<SVGSVGElement>) {
         d="M4 10.5L8 14.5L16 6"
         stroke="currentColor"
         strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ChevronIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-      <path
-        d="M5 7.5L10 12.5L15 7.5"
-        stroke="currentColor"
-        strokeWidth="1.6"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
