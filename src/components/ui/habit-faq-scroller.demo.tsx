@@ -63,7 +63,7 @@ export default function HabitFaqScrollerDemo() {
   };
 
   return (
-    <div className="text-gray-800 min-h-screen flex items-center justify-center py-20 px-4">
+    <div className="min-h-screen flex items-center justify-center py-20 px-4">
       <FaqSection data={faqData} />
     </div>
   );

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter, JetBrains_Mono } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
 const inter = Inter({
@@ -34,8 +35,13 @@ export default function RootLayout({
     <html
       lang="pt-BR"
       className={`${inter.variable} ${cormorant.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

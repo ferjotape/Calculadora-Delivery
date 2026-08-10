@@ -6,6 +6,7 @@ import { useEffect, useState, type SVGProps } from "react";
 import { logout } from "@/app/auth/actions";
 import { Logo } from "./Logo";
 import { LogoutButton } from "./LogoutButton";
+import { ThemeToggle } from "./ThemeToggle";
 
 type AppNavKey =
   | "dashboard"
@@ -67,7 +68,10 @@ export function AppSidebar() {
     <>
       {/* Desktop: sidebar fixa à esquerda */}
       <aside className="hidden w-60 shrink-0 flex-col border-r border-neutral-200 px-4 py-6 md:flex md:sticky md:top-0 md:h-screen dark:border-neutral-800">
-        <Logo className="px-2" />
+        <div className="flex items-center justify-between px-2">
+          <Logo />
+          <ThemeToggle />
+        </div>
 
         <nav aria-label="Navegação principal" className="mt-8 flex flex-col gap-1">
           {NAV_ITEMS.map((item) => (
@@ -105,9 +109,12 @@ export function AppSidebar() {
           </button>
           <Logo markClassName="h-6 w-6" textClassName="text-base" />
         </div>
-        <form action={logout}>
-          <LogoutButton />
-        </form>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <form action={logout}>
+            <LogoutButton />
+          </form>
+        </div>
       </header>
 
       {/* Mobile: menu lateral (drawer) */}
@@ -132,14 +139,17 @@ export function AppSidebar() {
         >
           <div className="flex items-center justify-between px-2">
             <Logo />
-            <button
-              type="button"
-              onClick={() => setIsDrawerOpen(false)}
-              aria-label="Fechar menu"
-              className="flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900"
-            >
-              <CloseIcon className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <ThemeToggle />
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(false)}
+                aria-label="Fechar menu"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-900"
+              >
+                <CloseIcon className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           <nav aria-label="Navegação principal" className="mt-8 flex flex-col gap-1">

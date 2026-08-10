@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Tailwind v4 não tem mais darkMode:'class' no config — isso troca o
+   variante `dark:` de prefers-color-scheme (padrão) para reagir à classe
+   .dark na <html>, que é quem o next-themes controla. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #faf9f5;
   --foreground: #141413;
@@ -111,12 +116,10 @@
   --radius-3xl: 2rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #181715;
-    --foreground: #faf9f5;
-    --hairline: #38362f;
-  }
+.dark {
+  --background: #181715; /* surface-dark */
+  --foreground: #faf9f5; /* canvas usado como texto claro no escuro */
+  --hairline: #38362f;
 }
 
 body {

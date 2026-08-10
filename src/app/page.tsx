@@ -7,6 +7,7 @@ import type { SVGProps } from "react";
 import { Logo } from "@/components/Logo";
 import { Reveal } from "@/components/Reveal";
 import { FaqCarousel } from "@/components/FaqCarousel";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { formatCurrency } from "@/lib/format";
 import { SUBSCRIPTION_PRICE_BRL_CENTS, SUBSCRIPTION_TRIAL_DAYS } from "@/lib/stripe/plan";
 
@@ -56,12 +57,15 @@ function LandingHeader() {
   return (
     <header className="flex items-center justify-between px-4 py-4 sm:px-6">
       <Logo markClassName="h-7 w-7" textClassName="text-lg" />
-      <Link
-        href="/login"
-        className="text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
-      >
-        Entrar
-      </Link>
+      <div className="flex items-center gap-3">
+        <ThemeToggle />
+        <Link
+          href="/login"
+          className="text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-white"
+        >
+          Entrar
+        </Link>
+      </div>
     </header>
   );
 }
