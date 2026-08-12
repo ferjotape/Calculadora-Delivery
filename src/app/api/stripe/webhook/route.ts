@@ -8,17 +8,41 @@ function extractPeriodEnd(subscription: Stripe.Subscription): string | null {
   return periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
 }
 
+/**
+ * Resolve qual plano corresponde à assinatura: primeiro por metadata.plan_id
+ * (gravado pelo próprio app em toda criação/troca de plano feita pelo
+ * Checkout ou pela tela de Assinatura), com fallback pro Price ID atual da
+ * assinatura (cobre o caso de alguém mudar o preço direto no Dashboard do
+ * Stripe, sem passar pelo app). Se nenhum dos dois resolver — ex: assinaturas
+ * legadas com um Price ID que não existe mais em `plans` — retorna
+ * undefined, e o upsert simplesmente não mexe no plan_id já salvo.
+ */
+async function resolvePlanId(
+  supabase: ReturnType<typeof createAdminClient>,
+  subscription: Stripe.Subscription
+): Promise<string | undefined> {
+  const metadataPlanId = subscription.metadata?.plan_id;
+  if (metadataPlanId) return metadataPlanId;
+
+  const priceId = subscription.items.data[0]?.price?.id;
+  if (!priceId) return undefined;
+
+  const { data: plan } = await supabase
+    .from("plans")
+    .select("id")
+    .eq("stripe_price_id", priceId)
+    .maybeSingle();
+
+  return plan?.id;
+}
+
 async function upsertSubscriptionFromStripe(
   userId: string,
   customerId: string,
   subscription: Stripe.Subscription
 ) {
   const supabase = createAdminClient();
-  // plan_id só é conhecido quando o próprio app criou/atualizou a assinatura
-  // (sempre grava metadata.plan_id nesses casos). Quando ausente — ex:
-  // assinaturas legadas de antes do modelo de 4 planos — omitimos a chave do
-  // upsert pra não sobrescrever o plan_id já definido manualmente no banco.
-  const planId = subscription.metadata?.plan_id;
+  const planId = await resolvePlanId(supabase, subscription);
 
   await supabase.from("subscriptions").upsert(
     {
