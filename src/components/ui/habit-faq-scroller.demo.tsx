@@ -1,5 +1,4 @@
 import FaqSection, { type FaqSectionData } from "@/components/ui/habit-faq-scroller";
-import { SUBSCRIPTION_TRIAL_DAYS } from "@/lib/stripe/plan";
 
 /**
  * Demo com o conteúdo real de FAQ do CUSTTO (mesmas perguntas já usadas na
@@ -37,8 +36,9 @@ export default function HabitFaqScrollerDemo() {
         faqItems: [
           {
             id: "q3",
-            question: "Como funciona o teste grátis?",
-            answer: `Você usa o CUSTTO completo por ${SUBSCRIPTION_TRIAL_DAYS} dias sem pagar nada. A cobrança só começa depois do período de teste, e você pode cancelar antes disso sem custo.`,
+            question: "Existe plano grátis?",
+            answer:
+              "Sim. O plano Gratuito não expira e não pede cartão de crédito — você cadastra até 2 receitas pra já sentir o CUSTTO calculando o preço certo.",
           },
           {
             id: "q4",

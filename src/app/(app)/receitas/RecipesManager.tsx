@@ -17,12 +17,14 @@ export type RecipeSummary = {
 
 type Props = {
   initialRecipes: RecipeSummary[];
+  recipeLimit: number | null;
+  planName: string;
 };
 
 const inputClass =
-  "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:focus:border-neutral-100";
+  "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:focus:border-neutral-100 disabled:cursor-not-allowed disabled:opacity-60";
 
-export function RecipesManager({ initialRecipes }: Props) {
+export function RecipesManager({ initialRecipes, recipeLimit, planName }: Props) {
   const router = useRouter();
   const [recipes, setRecipes] = useState<RecipeSummary[]>(initialRecipes);
   const [name, setName] = useState("");
@@ -32,6 +34,8 @@ export function RecipesManager({ initialRecipes }: Props) {
   const [pendingAction, setPendingAction] = useState<
     { type: "create" } | { type: "remove"; id: string } | null
   >(null);
+
+  const atLimit = recipeLimit !== null && recipes.length >= recipeLimit;
 
   const submit = () => {
     const loss = Number(lossPct);
@@ -75,43 +79,58 @@ export function RecipesManager({ initialRecipes }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && !atLimit && <p className="text-sm text-red-600">{error}</p>}
 
       <div className="grid grid-cols-1 gap-3">
         <Card
           title="Nova receita"
           description="Depois de criar, você adiciona os insumos e as quantidades usadas."
         >
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-            <div className="flex-1">
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Nome do prato (ex: Marmita de frango)"
-                className={inputClass}
-              />
+          {atLimit ? (
+            <div className="flex flex-col gap-3 rounded-md border border-amber-300 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950">
+              <p className="text-sm text-amber-800 dark:text-amber-300">
+                Você atingiu o limite de receitas do seu plano {planName}. Faça upgrade para
+                cadastrar mais pratos.
+              </p>
+              <Link
+                href="/billing"
+                className="w-fit rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-active"
+              >
+                Ver planos
+              </Link>
             </div>
-            <div className="sm:w-32">
-              <input
-                value={lossPct}
-                onChange={(e) => setLossPct(e.target.value)}
-                type="number"
-                step="0.01"
-                min="0"
-                max="100"
-                placeholder="% perda"
-                className={inputClass}
-              />
+          ) : (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+              <div className="flex-1">
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Nome do prato (ex: Marmita de frango)"
+                  className={inputClass}
+                />
+              </div>
+              <div className="sm:w-32">
+                <input
+                  value={lossPct}
+                  onChange={(e) => setLossPct(e.target.value)}
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  placeholder="% perda"
+                  className={inputClass}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={submit}
+                disabled={isPending}
+                className="w-full rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-active disabled:opacity-60 sm:w-auto"
+              >
+                {pendingAction?.type === "create" ? "Criando..." : "Criar receita"}
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={submit}
-              disabled={isPending}
-              className="w-full rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-active disabled:opacity-60 sm:w-auto"
-            >
-              {pendingAction?.type === "create" ? "Criando..." : "Criar receita"}
-            </button>
-          </div>
+          )}
         </Card>
 
         <Card>

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getEffectivePlan } from "@/lib/subscription";
 import {
   recipeSchema,
   recipeDetailsSchema,
@@ -21,6 +22,7 @@ import type { Recipe, RecipeIngredient } from "@/lib/types/database";
 export type RecipeActionResult = {
   success: boolean;
   error?: string;
+  limitReached?: boolean;
   recipe?: Recipe;
 };
 
@@ -62,6 +64,19 @@ export async function createRecipe(input: RecipeInput): Promise<RecipeActionResu
   const { supabase, user } = await requireUser();
   if (!user) {
     return { success: false, error: "Sessão expirada. Faça login novamente." };
+  }
+
+  const [plan, { count }] = await Promise.all([
+    getEffectivePlan(supabase, user.id),
+    supabase.from("recipes").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+  ]);
+
+  if (plan.recipeLimit !== null && (count ?? 0) >= plan.recipeLimit) {
+    return {
+      success: false,
+      limitReached: true,
+      error: `Você atingiu o limite de receitas do seu plano ${plan.name}. Faça upgrade para cadastrar mais pratos.`,
+    };
   }
 
   const { data, error } = await supabase

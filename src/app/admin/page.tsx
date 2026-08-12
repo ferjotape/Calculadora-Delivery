@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Logo } from "@/components/Logo";
 import { formatCurrency, formatNumber } from "@/lib/format";
-import { SUBSCRIPTION_PRICE_BRL_CENTS } from "@/lib/stripe/plan";
 
 const STATUS_LABELS: Record<string, string> = {
   active: "Ativa",
@@ -47,16 +46,17 @@ export default async function AdminPage() {
   // deixa cada usuário ver as próprias linhas).
   const admin = createAdminClient();
 
-  const [profilesRes, subscriptionsRes, recipesRes, ingredientsRes, costSettingsRes] =
+  const [profilesRes, subscriptionsRes, recipesRes, ingredientsRes, costSettingsRes, plansRes] =
     await Promise.all([
       admin
         .from("profiles")
         .select("id, restaurant_name, email, created_at")
         .order("created_at", { ascending: false }),
-      admin.from("subscriptions").select("user_id, status, updated_at"),
+      admin.from("subscriptions").select("user_id, status, plan_id, updated_at"),
       admin.from("recipes").select("user_id"),
       admin.from("ingredients").select("user_id"),
       admin.from("cost_settings").select("user_id"),
+      admin.from("plans").select("id, price_cents"),
     ]);
 
   const profiles = profilesRes.data ?? [];
@@ -64,6 +64,7 @@ export default async function AdminPage() {
   const recipes = recipesRes.data ?? [];
   const ingredients = ingredientsRes.data ?? [];
   const costSettingsRows = costSettingsRes.data ?? [];
+  const priceCentsByPlan = new Map((plansRes.data ?? []).map((p) => [p.id, p.price_cents]));
 
   const now = new Date().getTime();
 
@@ -91,7 +92,10 @@ export default async function AdminPage() {
   }
 
   // === Métricas financeiras ===
-  const mrr = (activeCount * SUBSCRIPTION_PRICE_BRL_CENTS) / 100;
+  const mrr =
+    subscriptions
+      .filter((s) => s.status === "active")
+      .reduce((sum, s) => sum + (priceCentsByPlan.get(s.plan_id) ?? 0), 0) / 100;
 
   // Aproximação: não guardamos histórico de transição de status, só o status
   // atual. "Resolvidas" = assinaturas que já passaram do trial pra um

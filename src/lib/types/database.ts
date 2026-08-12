@@ -97,9 +97,21 @@ export type Subscription = {
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   status: string;
+  plan_id: string;
   current_period_end: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type Plan = {
+  id: string;
+  name: string;
+  price_cents: number;
+  recipe_limit: number | null;
+  has_combos: boolean;
+  stripe_price_id: string | null;
+  display_order: number;
+  created_at: string;
 };
 
 export type Database = {
@@ -162,6 +174,12 @@ export type Database = {
         Row: Subscription;
         Insert: Partial<Subscription> & { user_id: string };
         Update: Partial<Subscription>;
+        Relationships: [];
+      };
+      plans: {
+        Row: Plan;
+        Insert: Partial<Plan> & { id: string; name: string; price_cents: number; display_order: number };
+        Update: Partial<Plan>;
         Relationships: [];
       };
       monthly_revenue: {

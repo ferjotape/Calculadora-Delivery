@@ -14,6 +14,12 @@ async function upsertSubscriptionFromStripe(
   subscription: Stripe.Subscription
 ) {
   const supabase = createAdminClient();
+  // plan_id só é conhecido quando o próprio app criou/atualizou a assinatura
+  // (sempre grava metadata.plan_id nesses casos). Quando ausente — ex:
+  // assinaturas legadas de antes do modelo de 4 planos — omitimos a chave do
+  // upsert pra não sobrescrever o plan_id já definido manualmente no banco.
+  const planId = subscription.metadata?.plan_id;
+
   await supabase.from("subscriptions").upsert(
     {
       user_id: userId,
@@ -22,6 +28,7 @@ async function upsertSubscriptionFromStripe(
       status: subscription.status,
       current_period_end: extractPeriodEnd(subscription),
       updated_at: new Date().toISOString(),
+      ...(planId ? { plan_id: planId } : {}),
     },
     { onConflict: "user_id" }
   );

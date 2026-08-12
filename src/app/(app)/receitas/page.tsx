@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { aggregateRecipeCosts } from "@/lib/pricing";
-import { getSubscriptionStatus } from "@/lib/subscription";
+import { getEffectivePlan } from "@/lib/subscription";
 import { RecipesManager, type RecipeSummary } from "./RecipesManager";
 import { ScreenHeader } from "@/components/ScreenHeader";
 
@@ -16,10 +16,7 @@ export default async function RecipesPage() {
     redirect("/login");
   }
 
-  const subscriptionStatus = await getSubscriptionStatus(supabase, user.id);
-  if (!subscriptionStatus.isActive) {
-    redirect("/billing");
-  }
+  const plan = await getEffectivePlan(supabase, user.id);
 
   const [{ data: recipes }, { data: ingredients }] = await Promise.all([
     supabase
@@ -59,7 +56,11 @@ export default async function RecipesPage() {
         description="Monte seus pratos a partir dos insumos já cadastrados e acompanhe o custo de cada receita."
       />
 
-      <RecipesManager initialRecipes={summaries} />
+      <RecipesManager
+        initialRecipes={summaries}
+        recipeLimit={plan.recipeLimit}
+        planName={plan.name}
+      />
 
       <div className="flex shrink-0 justify-end border-t border-neutral-200 pt-3 dark:border-neutral-800">
         <Link

@@ -35,7 +35,7 @@ export default async function Image() {
           tá dando prejuízo.
         </div>
         <div style={{ display: "flex", fontSize: 28, color: "#3d3d3a", marginTop: 32 }}>
-          Precificação automática pra restaurante e delivery. 7 dias grátis.
+          Precificação automática pra restaurante e delivery. Comece grátis.
         </div>
       </div>
     ),

@@ -9,7 +9,7 @@ import { Reveal } from "@/components/Reveal";
 import { FaqCarousel } from "@/components/FaqCarousel";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { formatCurrency } from "@/lib/format";
-import { SUBSCRIPTION_PRICE_BRL_CENTS, SUBSCRIPTION_TRIAL_DAYS } from "@/lib/stripe/plan";
+import { PLANS } from "@/lib/stripe/plan";
 
 const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5521999982983";
 const WHATSAPP_MESSAGE = "Olá, quero tirar dúvidas sobre o CUSTTO";
@@ -17,7 +17,7 @@ const WHATSAPP_HREF = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponen
 
 const title = "CUSTTO — Descubra se seu prato tá dando prejuízo";
 const description =
-  "Pare de precificar no chute. O CUSTTO calcula o preço ideal de cada prato do seu delivery — com custo de insumo, taxa de plataforma (iFood, 99Food, Keeta) e desconto considerados automaticamente. Teste grátis por 7 dias.";
+  "Pare de precificar no chute. O CUSTTO calcula o preço ideal de cada prato do seu delivery — com custo de insumo, taxa de plataforma (iFood, 99Food, Keeta) e desconto considerados automaticamente. Comece grátis, sem cartão de crédito.";
 
 export const metadata: Metadata = {
   title,
@@ -93,7 +93,7 @@ function Hero() {
             href="/signup"
             className="rounded-md bg-accent px-6 py-3 text-center text-base font-medium text-white transition-colors hover:bg-accent-active"
           >
-            Testar grátis por 7 dias
+            Começar grátis
           </Link>
           <a
             href={WHATSAPP_HREF}
@@ -107,7 +107,7 @@ function Hero() {
         </div>
 
         <p className="hero-fade-up text-xs text-neutral-400" style={{ animationDelay: "260ms" }}>
-          Sem cartão de crédito pra começar · Cancele quando quiser
+          Plano Gratuito pra sempre · Sem cartão de crédito
         </p>
       </div>
     </section>
@@ -284,55 +284,91 @@ function HowItWorksSection() {
   );
 }
 
-const PRICING_FEATURES = [
-  "Custos fixos e variáveis ilimitados",
-  "Insumos e receitas ilimitados",
-  "Preço ajustado por plataforma (iFood, 99Food, Keeta e outras)",
-  "Simulação de desconto e cupom",
-  "Indicador de markup e margem em tempo real",
-];
-
 function PricingSection() {
-  const priceLabel = formatCurrency(SUBSCRIPTION_PRICE_BRL_CENTS / 100);
-
   return (
     <section className="bg-neutral-100 px-4 py-14 sm:px-6 sm:py-20 dark:bg-neutral-900">
-      <div className="mx-auto flex max-w-md flex-col gap-8">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8">
         <Reveal className="text-center">
           <p className="font-mono text-xs uppercase tracking-wide text-accent">Preço</p>
-          <h2 className="mt-2 text-2xl sm:text-3xl">Um plano. Sem pegadinha.</h2>
+          <h2 className="mt-2 text-2xl sm:text-3xl">Comece grátis. Cresça quando precisar.</h2>
         </Reveal>
 
-        <Reveal
-          delayMs={80}
-          className="flex flex-col gap-6 rounded-xl border border-neutral-300 bg-background p-6 sm:p-8 dark:border-neutral-700"
-        >
-          <div className="text-center">
-            <p className="font-mono text-4xl font-semibold sm:text-5xl">
-              {priceLabel}
-              <span className="text-lg font-normal text-neutral-500">/mês</span>
-            </p>
-            <p className="mt-2 text-sm text-neutral-500">
-              {SUBSCRIPTION_TRIAL_DAYS} dias grátis, cancele quando quiser
-            </p>
-          </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {PLANS.map((plan, index) => {
+            const isFeatured = plan.id === "profissional";
+            const priceLabel =
+              plan.priceCents === 0 ? "Grátis" : formatCurrency(plan.priceCents / 100);
 
-          <ul className="flex flex-col gap-3">
-            {PRICING_FEATURES.map((feature) => (
-              <li key={feature} className="flex items-start gap-2 text-sm">
-                <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
+            return (
+              <Reveal key={plan.id} delayMs={index * 60}>
+                <div
+                  className={`flex h-full flex-col gap-4 rounded-xl border bg-background p-6 ${
+                    isFeatured
+                      ? "border-accent shadow-[0_0_0_1px_var(--accent)]"
+                      : "border-neutral-300 dark:border-neutral-700"
+                  }`}
+                >
+                  {isFeatured && (
+                    <span className="w-fit rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-white">
+                      Mais popular
+                    </span>
+                  )}
 
-          <Link
-            href="/signup"
-            className="rounded-md bg-accent px-6 py-3 text-center text-base font-medium text-white transition-colors hover:bg-accent-active"
-          >
-            Começar agora
-          </Link>
-        </Reveal>
+                  <div>
+                    <h3 className="text-lg font-medium">{plan.name}</h3>
+                    <p className="mt-1 font-mono text-3xl font-semibold">
+                      {priceLabel}
+                      {plan.priceCents > 0 && (
+                        <span className="text-base font-normal text-neutral-500">/mês</span>
+                      )}
+                    </p>
+                  </div>
+
+                  <ul className="flex flex-1 flex-col gap-2 text-sm">
+                    <li className="flex items-start gap-2">
+                      <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                      <span>
+                        {plan.recipeLimit === null
+                          ? "Receitas ilimitadas"
+                          : `Até ${plan.recipeLimit} receita${plan.recipeLimit === 1 ? "" : "s"}`}
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                      <span>Preço ajustado por plataforma (iFood, 99Food, Keeta e outras)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                      <span>Indicador de markup e margem em tempo real</span>
+                    </li>
+                    {plan.hasCombos && (
+                      <li className="flex items-start gap-2">
+                        <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                        <span className="flex flex-wrap items-center gap-1.5">
+                          Aba de Combos
+                          <span className="rounded-full bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+                            Em breve
+                          </span>
+                        </span>
+                      </li>
+                    )}
+                  </ul>
+
+                  <Link
+                    href="/signup"
+                    className={
+                      isFeatured
+                        ? "rounded-md bg-accent px-4 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-accent-active"
+                        : "rounded-md border border-neutral-300 px-4 py-2.5 text-center text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
+                    }
+                  >
+                    {plan.id === "gratuito" ? "Começar grátis" : "Assinar"}
+                  </Link>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
@@ -350,8 +386,9 @@ const FAQ_ITEMS = [
       "Funciona pra qualquer restaurante ou operação de delivery que venda pratos com ingredientes — hamburgueria, marmitaria, pizzaria, confeitaria, esfiharia, entre outros.",
   },
   {
-    question: "Como funciona o teste grátis?",
-    answer: `Você usa o CUSTTO completo por ${SUBSCRIPTION_TRIAL_DAYS} dias sem pagar nada. A cobrança só começa depois do período de teste, e você pode cancelar antes disso sem custo.`,
+    question: "Existe plano grátis?",
+    answer:
+      "Sim. O plano Gratuito não expira e não pede cartão de crédito — você cadastra até 2 receitas pra já sentir o CUSTTO calculando o preço certo. Quando precisar de mais, é só fazer upgrade.",
   },
   {
     question: "Posso cancelar quando quiser?",
@@ -388,14 +425,14 @@ function FinalCtaSection() {
       <Reveal className="mx-auto flex max-w-xl flex-col items-center gap-6 text-center">
         <h2 className="text-2xl sm:text-3xl">Pare de perder dinheiro em cada prato.</h2>
         <p className="text-neutral-300">
-          Teste o CUSTTO grátis por {SUBSCRIPTION_TRIAL_DAYS} dias e descubra o preço certo do seu
-          cardápio hoje mesmo.
+          Comece grátis, sem cartão de crédito, e descubra o preço certo do seu cardápio hoje
+          mesmo.
         </p>
         <Link
           href="/signup"
           className="rounded-md bg-accent px-6 py-3 text-base font-medium text-white transition-colors hover:bg-accent-active"
         >
-          Testar grátis por 7 dias
+          Começar grátis
         </Link>
       </Reveal>
     </section>

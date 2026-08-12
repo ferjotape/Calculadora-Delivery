@@ -14,7 +14,6 @@ import {
   type MarkupBenchmark,
   type PracticedPriceStatus,
 } from "@/lib/pricing";
-import { getSubscriptionStatus } from "@/lib/subscription";
 import { Card } from "@/components/Card";
 import { ScreenHeader } from "@/components/ScreenHeader";
 
@@ -36,11 +35,6 @@ export default async function DashboardPage() {
 
   if (!user) {
     redirect("/login");
-  }
-
-  const subscriptionStatus = await getSubscriptionStatus(supabase, user.id);
-  if (!subscriptionStatus.isActive) {
-    redirect("/billing");
   }
 
   const [{ data: recipes }, { data: ingredients }, { data: costSettings }] = await Promise.all([
