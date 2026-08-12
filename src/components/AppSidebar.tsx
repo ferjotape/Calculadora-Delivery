@@ -11,6 +11,7 @@ import { ThemeToggle } from "./ThemeToggle";
 type AppNavKey =
   | "dashboard"
   | "recipes"
+  | "combos"
   | "ingredients"
   | "platforms"
   | "costs"
@@ -23,6 +24,7 @@ const NAV_ITEMS: { key: AppNavKey; label: string; href: string; Icon: IconCompon
   { key: "motoboy", label: "Custo Motoboy", href: "/custo-motoboy", Icon: MotoboyIcon },
   { key: "ingredients", label: "Insumos", href: "/insumos", Icon: IngredientsIcon },
   { key: "recipes", label: "Receitas", href: "/receitas", Icon: RecipesIcon },
+  { key: "combos", label: "Combos", href: "/combos", Icon: CombosIcon },
   { key: "platforms", label: "Plataformas", href: "/plataformas", Icon: PlatformsIcon },
   { key: "billing", label: "Assinatura", href: "/billing", Icon: BillingIcon },
 ];
@@ -30,6 +32,7 @@ const NAV_ITEMS: { key: AppNavKey; label: string; href: string; Icon: IconCompon
 function getActiveKey(pathname: string): AppNavKey | null {
   if (pathname.startsWith("/dashboard")) return "dashboard";
   if (pathname.startsWith("/receitas")) return "recipes";
+  if (pathname.startsWith("/combos")) return "combos";
   if (pathname.startsWith("/insumos")) return "ingredients";
   if (pathname.startsWith("/plataformas")) return "platforms";
   if (pathname.startsWith("/billing")) return "billing";
@@ -242,6 +245,21 @@ function RecipesIcon(props: SVGProps<SVGSVGElement>) {
         strokeLinejoin="round"
       />
       <path d="M10 4.5V16.5" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function CombosIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path
+        d="M10 3L16.5 6.5V13.5L10 17L3.5 13.5V6.5L10 3Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      <path d="M3.5 6.5L10 10L16.5 6.5" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      <path d="M10 10V17" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
 }

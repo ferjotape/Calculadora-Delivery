@@ -1,0 +1,303 @@
+"use client";
+
+import { useMemo, useState, useTransition } from "react";
+import { createCombo, deleteCombo } from "./actions";
+import { formatNumber } from "@/lib/format";
+import { Card } from "@/components/Card";
+
+export type RecipeOption = {
+  id: string;
+  name: string;
+};
+
+export type ComboItemSummary = {
+  id: string;
+  recipeId: string;
+  recipeName: string;
+  quantity: number;
+};
+
+export type ComboSummary = {
+  id: string;
+  name: string;
+  items: ComboItemSummary[];
+};
+
+type DraftItem = {
+  recipeId: string;
+  recipeName: string;
+  quantity: number;
+};
+
+type Props = {
+  initialCombos: ComboSummary[];
+  availableRecipes: RecipeOption[];
+};
+
+const inputClass =
+  "w-full rounded-md border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 dark:border-neutral-700 dark:focus:border-neutral-100";
+
+export function ComboManager({ initialCombos, availableRecipes }: Props) {
+  const [combos, setCombos] = useState<ComboSummary[]>(initialCombos);
+  const [name, setName] = useState("");
+  const [draftItems, setDraftItems] = useState<DraftItem[]>([]);
+  const [recipeId, setRecipeId] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const [error, setError] = useState<string | null>(null);
+  const [isSaving, startSaving] = useTransition();
+  const [pendingRemoveId, setPendingRemoveId] = useState<string | null>(null);
+  const [pickerKey, setPickerKey] = useState(0);
+
+  const recipesMap = useMemo(
+    () => new Map(availableRecipes.map((r) => [r.id, r])),
+    [availableRecipes]
+  );
+
+  const addItem = () => {
+    const qty = Number(quantity);
+    const recipe = recipesMap.get(recipeId);
+    if (!recipe || Number.isNaN(qty) || qty <= 0) {
+      setError("Selecione uma receita e informe a quantidade.");
+      return;
+    }
+    setError(null);
+    setDraftItems((prev) => [...prev, { recipeId: recipe.id, recipeName: recipe.name, quantity: qty }]);
+    setRecipeId("");
+    setQuantity("1");
+    setPickerKey((k) => k + 1);
+  };
+
+  const removeDraftItem = (index: number) => {
+    setDraftItems((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const saveCombo = () => {
+    if (!name.trim()) {
+      setError("Informe o nome do combo.");
+      return;
+    }
+    if (draftItems.length === 0) {
+      setError("Adicione pelo menos uma receita ao combo.");
+      return;
+    }
+    setError(null);
+    startSaving(async () => {
+      const result = await createCombo({
+        name: name.trim(),
+        items: draftItems.map((item) => ({ recipe_id: item.recipeId, quantity: item.quantity })),
+      });
+      if (result.success && result.combo) {
+        const savedCombo = result.combo;
+        setCombos((prev) => [
+          ...prev,
+          {
+            id: savedCombo.id,
+            name: savedCombo.name,
+            items: savedCombo.items.map((item) => ({
+              id: item.id,
+              recipeId: item.recipe_id,
+              recipeName: recipesMap.get(item.recipe_id)?.name ?? "Receita removida",
+              quantity: item.quantity,
+            })),
+          },
+        ]);
+        setName("");
+        setDraftItems([]);
+      } else {
+        setError(result.error ?? "Erro ao criar combo.");
+      }
+    });
+  };
+
+  const removeCombo = (combo: ComboSummary) => {
+    if (!window.confirm(`Remover o combo "${combo.name}"?`)) {
+      return;
+    }
+    setPendingRemoveId(combo.id);
+    startSaving(async () => {
+      const result = await deleteCombo(combo.id);
+      setPendingRemoveId(null);
+      if (result.success) {
+        setCombos((prev) => prev.filter((c) => c.id !== combo.id));
+      } else {
+        setError(result.error ?? "Erro ao remover combo.");
+      }
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <div className="grid grid-cols-1 gap-3">
+        <Card
+          title="Novo combo"
+          description="Dê um nome ao combo e adicione as receitas que fazem parte dele."
+        >
+          <div>
+            <label className="text-sm font-medium">Nome do combo</label>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ex: Combo Casal"
+              className={`${inputClass} mt-1`}
+            />
+          </div>
+
+          {availableRecipes.length === 0 ? (
+            <p className="text-sm text-neutral-400">
+              Você ainda não tem receitas cadastradas. Cadastre em &quot;Receitas&quot; antes de
+              montar combos.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+              <div className="flex-1">
+                <RecipePicker
+                  key={pickerKey}
+                  recipes={availableRecipes}
+                  value={recipeId}
+                  onChange={setRecipeId}
+                />
+              </div>
+              <div className="w-32">
+                <input
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  type="number"
+                  step="1"
+                  min="1"
+                  placeholder="Qtd."
+                  className={inputClass}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={addItem}
+                className="rounded-md border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-900"
+              >
+                Adicionar
+              </button>
+            </div>
+          )}
+
+          {draftItems.length > 0 && (
+            <div className="flex flex-col gap-2">
+              {draftItems.map((item, index) => (
+                <div
+                  key={`${item.recipeId}-${index}`}
+                  className="flex items-center justify-between gap-3 rounded-md border border-neutral-300 px-3 py-2 text-sm dark:border-neutral-700"
+                >
+                  <span>
+                    {formatNumber(item.quantity)}x {item.recipeName}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeDraftItem(index)}
+                    className="text-xs text-neutral-500 hover:underline"
+                  >
+                    Remover
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={saveCombo}
+              disabled={isSaving}
+              className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-active disabled:opacity-60"
+            >
+              {isSaving ? "Salvando..." : "Salvar combo"}
+            </button>
+          </div>
+        </Card>
+
+        <Card title="Meus combos">
+          {combos.length === 0 && (
+            <p className="text-sm text-neutral-400">Nenhum combo cadastrado ainda.</p>
+          )}
+
+          {combos.map((combo) => (
+            <div
+              key={combo.id}
+              className="flex flex-wrap items-start justify-between gap-3 rounded-md border border-neutral-300 p-3 dark:border-neutral-700"
+            >
+              <div>
+                <p className="text-sm font-medium">{combo.name}</p>
+                <p className="mt-1 text-xs text-neutral-500">
+                  {combo.items.map((item) => `${formatNumber(item.quantity)}x ${item.recipeName}`).join(" · ")}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => removeCombo(combo)}
+                disabled={isSaving && pendingRemoveId === combo.id}
+                className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
+              >
+                {isSaving && pendingRemoveId === combo.id ? "Removendo..." : "Remover"}
+              </button>
+            </div>
+          ))}
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function RecipePicker({
+  recipes,
+  value,
+  onChange,
+}: {
+  recipes: RecipeOption[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const selected = recipes.find((r) => r.id === value);
+  const [query, setQuery] = useState(selected?.name ?? "");
+  const [isOpen, setIsOpen] = useState(false);
+
+  const matches = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const list = q ? recipes.filter((r) => r.name.toLowerCase().includes(q)) : recipes;
+    return list.slice(0, 8);
+  }, [recipes, query]);
+
+  return (
+    <div className="relative">
+      <input
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setIsOpen(true);
+          onChange("");
+        }}
+        onFocus={() => setIsOpen(true)}
+        onBlur={() => setTimeout(() => setIsOpen(false), 150)}
+        placeholder="Buscar receita pelo nome..."
+        className={inputClass}
+      />
+      {isOpen && matches.length > 0 && (
+        <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border border-neutral-300 bg-white text-sm shadow-md dark:border-neutral-700 dark:bg-neutral-900">
+          {matches.map((recipe) => (
+            <li key={recipe.id}>
+              <button
+                type="button"
+                onClick={() => {
+                  onChange(recipe.id);
+                  setQuery(recipe.name);
+                  setIsOpen(false);
+                }}
+                className="block w-full px-3 py-2 text-left hover:bg-neutral-100 dark:hover:bg-neutral-800"
+              >
+                {recipe.name}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}

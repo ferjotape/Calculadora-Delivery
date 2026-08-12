@@ -114,6 +114,21 @@ export type Plan = {
   created_at: string;
 };
 
+export type Combo = {
+  id: string;
+  user_id: string;
+  name: string;
+  discount_pct: number;
+  created_at: string;
+};
+
+export type ComboRecipe = {
+  id: string;
+  combo_id: string;
+  recipe_id: string;
+  quantity: number;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -192,6 +207,18 @@ export type Database = {
         Row: DeliveryCostSettings;
         Insert: Partial<DeliveryCostSettings> & { user_id: string };
         Update: Partial<DeliveryCostSettings>;
+        Relationships: [];
+      };
+      combos: {
+        Row: Combo;
+        Insert: Partial<Combo> & { user_id: string; name: string };
+        Update: Partial<Combo>;
+        Relationships: [];
+      };
+      combo_recipes: {
+        Row: ComboRecipe;
+        Insert: Partial<ComboRecipe> & { combo_id: string; recipe_id: string; quantity: number };
+        Update: Partial<ComboRecipe>;
         Relationships: [];
       };
     };
