@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { createCombo, deleteCombo } from "./actions";
 import { formatNumber } from "@/lib/format";
@@ -230,14 +231,22 @@ export function ComboManager({ initialCombos, availableRecipes }: Props) {
                   {combo.items.map((item) => `${formatNumber(item.quantity)}x ${item.recipeName}`).join(" · ")}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => removeCombo(combo)}
-                disabled={isSaving && pendingRemoveId === combo.id}
-                className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
-              >
-                {isSaving && pendingRemoveId === combo.id ? "Removendo..." : "Remover"}
-              </button>
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/combos/${combo.id}`}
+                  className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
+                >
+                  Abrir
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => removeCombo(combo)}
+                  disabled={isSaving && pendingRemoveId === combo.id}
+                  className="rounded-md border border-neutral-300 px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50 disabled:opacity-60 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
+                >
+                  {isSaving && pendingRemoveId === combo.id ? "Removendo..." : "Remover"}
+                </button>
+              </div>
             </div>
           ))}
         </Card>
