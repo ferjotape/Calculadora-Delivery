@@ -72,3 +72,98 @@ export async function logout() {
   revalidatePath("/", "layout");
   redirect("/login");
 }
+
+export type ChangePasswordState = {
+  error: string | null;
+  success: boolean;
+};
+
+export async function changePassword(
+  _prevState: ChangePasswordState,
+  formData: FormData
+): Promise<ChangePasswordState> {
+  const currentPassword = String(formData.get("current_password") ?? "");
+  const newPassword = String(formData.get("new_password") ?? "");
+  const confirmPassword = String(formData.get("confirm_password") ?? "");
+
+  if (newPassword !== confirmPassword) {
+    return { error: "A nova senha e a confirmação não coincidem.", success: false };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user?.email) {
+    return { error: "Sessão expirada. Faça login novamente.", success: false };
+  }
+
+  const { error: verifyError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  });
+
+  if (verifyError) {
+    return { error: "Senha atual incorreta.", success: false };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+  if (error) {
+    return { error: translateAuthError(error.message), success: false };
+  }
+
+  return { error: null, success: true };
+}
+
+export type RequestPasswordResetState = {
+  error: string | null;
+  success: boolean;
+};
+
+export async function requestPasswordReset(
+  _prevState: RequestPasswordResetState,
+  formData: FormData
+): Promise<RequestPasswordResetState> {
+  const email = String(formData.get("email") ?? "");
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${siteUrl}/auth/callback?next=/redefinir-senha`,
+  });
+
+  if (error) {
+    console.error("requestPasswordReset:", error.message);
+  }
+
+  // Sempre retorna sucesso, mesmo se o e-mail não existir — evita enumeração de contas.
+  return { error: null, success: true };
+}
+
+export type ResetPasswordState = {
+  error: string | null;
+};
+
+export async function resetPassword(
+  _prevState: ResetPasswordState,
+  formData: FormData
+): Promise<ResetPasswordState> {
+  const newPassword = String(formData.get("new_password") ?? "");
+  const confirmPassword = String(formData.get("confirm_password") ?? "");
+
+  if (newPassword !== confirmPassword) {
+    return { error: "A nova senha e a confirmação não coincidem." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+  if (error) {
+    return { error: translateAuthError(error.message) };
+  }
+
+  revalidatePath("/", "layout");
+  redirect("/dashboard");
+}

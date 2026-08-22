@@ -83,9 +83,18 @@ export function AppSidebar() {
         </nav>
 
         <div className="mt-auto flex flex-col gap-3 border-t border-neutral-200 pt-4 dark:border-neutral-800">
-          <form action={logout}>
-            <LogoutButton />
-          </form>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/configuracoes"
+              aria-label="Configurações"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-neutral-300 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
+            >
+              <SettingsIcon className="h-4 w-4" />
+            </Link>
+            <form action={logout}>
+              <LogoutButton />
+            </form>
+          </div>
           <p className="px-3 text-xs text-neutral-400">
             <Link href="/termos-de-uso" className="hover:underline">
               Termos de Uso
@@ -114,6 +123,13 @@ export function AppSidebar() {
         </div>
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <Link
+            href="/configuracoes"
+            aria-label="Configurações"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-neutral-300 text-neutral-600 dark:border-neutral-700 dark:text-neutral-300"
+          >
+            <SettingsIcon className="h-4 w-4" />
+          </Link>
           <form action={logout}>
             <LogoutButton />
           </form>
@@ -161,7 +177,14 @@ export function AppSidebar() {
             ))}
           </nav>
 
-          <div className="mt-auto border-t border-neutral-200 pt-4 dark:border-neutral-800">
+          <div className="mt-auto flex items-center gap-2 border-t border-neutral-200 pt-4 dark:border-neutral-800">
+            <Link
+              href="/configuracoes"
+              aria-label="Configurações"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-neutral-300 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900"
+            >
+              <SettingsIcon className="h-4 w-4" />
+            </Link>
             <form action={logout}>
               <LogoutButton />
             </form>
@@ -335,6 +358,21 @@ function MotoboyIcon(props: SVGProps<SVGSVGElement>) {
         strokeLinejoin="round"
       />
       <path d="M10.5 9L12 12.5H15.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function SettingsIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.6" />
+      <path
+        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
