@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, CostSettings, Combo } from "@/lib/types/database";
 import { aggregateRecipeCosts, computeRecipePricing } from "@/lib/pricing";
+import { loadCostSettingsWithLiveRevenue } from "@/lib/monthly-revenue";
 
 export type ComboRecipeLine = {
   id: string;
@@ -44,9 +45,9 @@ export async function loadComboAggregates(
 
   if (!combo) return null;
 
-  const [{ data: comboRecipes }, { data: costSettings }] = await Promise.all([
+  const [{ data: comboRecipes }, costSettings] = await Promise.all([
     supabase.from("combo_recipes").select("*").eq("combo_id", comboId),
-    supabase.from("cost_settings").select("*").eq("user_id", userId).maybeSingle(),
+    loadCostSettingsWithLiveRevenue(supabase, userId),
   ]);
 
   const recipeIds = [...new Set((comboRecipes ?? []).map((cr) => cr.recipe_id))];
@@ -83,7 +84,7 @@ export async function loadComboAggregates(
     const pricing = computeRecipePricing({
       recipeCost,
       lossPct: recipe?.loss_pct ?? 0,
-      costSettings: costSettings ?? null,
+      costSettings,
     });
 
     if (pricing.costWithLoss === null || pricing.suggestedPrice === null) {
@@ -103,5 +104,5 @@ export async function loadComboAggregates(
     };
   });
 
-  return { combo, lines, totalCost, summedPrice, costSettings: costSettings ?? null, hasIssue };
+  return { combo, lines, totalCost, summedPrice, costSettings, hasIssue };
 }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getEffectivePlan } from "@/lib/subscription";
+import { loadCostSettingsWithLiveRevenue } from "@/lib/monthly-revenue";
 import {
   recipeSchema,
   recipeDetailsSchema,
@@ -283,19 +284,18 @@ export async function syncRecipePlatformPrices(
     return { success: false, error: "Receita não encontrada." };
   }
 
-  const [{ data: recipeIngredients }, { data: costSettings }, { data: platforms }] =
-    await Promise.all([
-      supabase
-        .from("recipe_ingredients")
-        .select("ingredient_id, quantity_used")
-        .eq("recipe_id", recipeId),
-      supabase.from("cost_settings").select("*").eq("user_id", user.id).maybeSingle(),
-      supabase
-        .from("delivery_platforms")
-        .select("id, fee_pct")
-        .eq("user_id", user.id)
-        .eq("is_active", true),
-    ]);
+  const [{ data: recipeIngredients }, costSettings, { data: platforms }] = await Promise.all([
+    supabase
+      .from("recipe_ingredients")
+      .select("ingredient_id, quantity_used")
+      .eq("recipe_id", recipeId),
+    loadCostSettingsWithLiveRevenue(supabase, user.id),
+    supabase
+      .from("delivery_platforms")
+      .select("id, fee_pct")
+      .eq("user_id", user.id)
+      .eq("is_active", true),
+  ]);
 
   if (!platforms || platforms.length === 0) {
     return { success: true };
@@ -316,7 +316,7 @@ export async function syncRecipePlatformPrices(
   const pricing = computeRecipePricing({
     recipeCost,
     lossPct: recipe.loss_pct,
-    costSettings: costSettings ?? null,
+    costSettings,
   });
 
   if (pricing.suggestedPrice === null || pricing.costWithLoss === null) {

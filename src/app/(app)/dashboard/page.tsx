@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { SVGProps } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { loadCostSettingsWithLiveRevenue } from "@/lib/monthly-revenue";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import {
   aggregateRecipeCosts,
@@ -37,14 +38,14 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const [{ data: recipes }, { data: ingredients }, { data: costSettings }] = await Promise.all([
+  const [{ data: recipes }, { data: ingredients }, costSettings] = await Promise.all([
     supabase
       .from("recipes")
       .select("id, name, loss_pct, practiced_price")
       .eq("user_id", user.id)
       .order("name", { ascending: true }),
     supabase.from("ingredients").select("id, unit_cost").eq("user_id", user.id),
-    supabase.from("cost_settings").select("*").eq("user_id", user.id).maybeSingle(),
+    loadCostSettingsWithLiveRevenue(supabase, user.id),
   ]);
 
   const recipeIds = (recipes ?? []).map((recipe) => recipe.id);
@@ -63,7 +64,7 @@ export default async function DashboardPage() {
     const pricing = computeRecipePricing({
       recipeCost: cost,
       lossPct: recipe.loss_pct,
-      costSettings: costSettings ?? null,
+      costSettings,
     });
 
     const practicedPrice = recipe.practiced_price;
@@ -88,8 +89,8 @@ export default async function DashboardPage() {
     };
   });
 
-  const costSummary = computeCostSettingsSummary(costSettings ?? null);
-  const currentMarkup = computeCurrentMarkup(costSettings ?? null);
+  const costSummary = computeCostSettingsSummary(costSettings);
+  const currentMarkup = computeCurrentMarkup(costSettings);
   const markupBenchmark = currentMarkup !== null ? getMarkupBenchmark(currentMarkup) : null;
 
   const totalRecipes = dashboardRecipes.length;

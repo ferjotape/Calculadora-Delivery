@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { computeAverageMonthlyRevenue } from "@/lib/monthly-revenue";
 import { CostSettingsForm } from "./CostSettingsForm";
 import { computeCostSettingsSummary, REVENUE_BELOW_FIXED_COSTS_WARNING } from "@/lib/pricing";
 import type { CostSettingsInput } from "@/lib/validation/cost-settings";
@@ -50,19 +51,27 @@ export default async function CustosPage({ searchParams }: Props) {
             .eq("year", viewYear),
     ]);
 
+  // Única fonte de verdade do faturamento médio: sempre a soma dos meses
+  // preenchidos do ano corrente ÷ quantidade de meses preenchidos — a mesma
+  // conta exibida logo abaixo, no bloco "Faturamento anual". Nunca usamos o
+  // snapshot em cost_settings.avg_monthly_revenue para calcular nada.
+  const liveAvgMonthlyRevenue = computeAverageMonthlyRevenue(currentYearRows ?? []);
+
   const defaultValues: CostSettingsInput = {
     fixed_costs: costSettings?.fixed_costs ?? [],
     card_fee_pct: costSettings?.card_fee_pct ?? 0,
     packaging_pct: costSettings?.packaging_pct ?? 0,
     free_delivery_pct: costSettings?.free_delivery_pct ?? 0,
     desired_profit_pct: costSettings?.desired_profit_pct ?? 0,
-    avg_monthly_revenue: costSettings?.avg_monthly_revenue ?? null,
+    avg_monthly_revenue: liveAvgMonthlyRevenue,
   };
 
   const currentYearValues = buildMonthlyValues(currentYearRows);
   const viewYearValues = viewYear === currentYear ? currentYearValues : buildMonthlyValues(viewYearRows);
 
-  const costSummary = computeCostSettingsSummary(costSettings ?? null);
+  const costSummary = computeCostSettingsSummary(
+    costSettings ? { ...costSettings, avg_monthly_revenue: liveAvgMonthlyRevenue } : null
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-3 p-4 sm:p-6">

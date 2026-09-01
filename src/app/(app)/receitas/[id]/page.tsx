@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { loadCostSettingsWithLiveRevenue } from "@/lib/monthly-revenue";
 import { RecipeDetailManager } from "./RecipeDetailManager";
 import { ScreenHeader } from "@/components/ScreenHeader";
 
@@ -23,7 +24,7 @@ export default async function RecipeDetailPage({ params }: Props) {
     { data: recipe },
     { data: recipeIngredients },
     { data: ingredients },
-    { data: costSettings },
+    costSettings,
     { data: platforms },
   ] = await Promise.all([
     supabase.from("recipes").select("*").eq("id", id).eq("user_id", user.id).maybeSingle(),
@@ -33,7 +34,7 @@ export default async function RecipeDetailPage({ params }: Props) {
       .select("id, name, unit, unit_cost")
       .eq("user_id", user.id)
       .order("name", { ascending: true }),
-    supabase.from("cost_settings").select("*").eq("user_id", user.id).maybeSingle(),
+    loadCostSettingsWithLiveRevenue(supabase, user.id),
     supabase
       .from("delivery_platforms")
       .select("id, name, fee_pct")
@@ -54,7 +55,7 @@ export default async function RecipeDetailPage({ params }: Props) {
         recipe={recipe}
         initialItems={recipeIngredients ?? []}
         availableIngredients={ingredients ?? []}
-        costSettings={costSettings ?? null}
+        costSettings={costSettings}
         platforms={platforms ?? []}
       />
     </div>
