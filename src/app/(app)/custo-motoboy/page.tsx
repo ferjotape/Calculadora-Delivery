@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { computeAverageMonthlyRevenue } from "@/lib/monthly-revenue";
+import { getLatestCompleteMonth } from "@/lib/monthly-revenue";
 import type { DeliveryCostSettingsInput } from "@/lib/validation/delivery-cost-settings";
 import { DeliveryCostForm } from "./DeliveryCostForm";
 import { ScreenHeader } from "@/components/ScreenHeader";
@@ -19,13 +19,19 @@ export default async function CustoMotoboyPage() {
 
   const [{ data: deliveryCostSettings }, { data: monthlyRevenueRows }] = await Promise.all([
     supabase.from("delivery_cost_settings").select("*").eq("user_id", user.id).maybeSingle(),
-    supabase.from("monthly_revenue").select("value").eq("user_id", user.id).eq("year", year),
+    supabase
+      .from("monthly_revenue")
+      .select("month, value, orders_count")
+      .eq("user_id", user.id)
+      .eq("year", year),
   ]);
 
-  const avgMonthlyRevenue = computeAverageMonthlyRevenue(monthlyRevenueRows ?? []);
+  // Único mês usado pro Ticket Médio: o mais recente com faturamento E nº de
+  // pedidos preenchidos — nunca uma média, nunca faturamento de um mês com
+  // pedidos de outro (mesma fonte usada em Configurações de Custos).
+  const referenceMonth = getLatestCompleteMonth(monthlyRevenueRows ?? []);
 
   const defaultValues: DeliveryCostSettingsInput = {
-    monthly_orders: deliveryCostSettings?.monthly_orders ?? 0,
     delivery_value: deliveryCostSettings?.delivery_value ?? 0,
   };
 
@@ -36,7 +42,7 @@ export default async function CustoMotoboyPage() {
         description="Calcule o ticket médio e o custo real do programa de entrega grátis."
       />
 
-      <DeliveryCostForm defaultValues={defaultValues} avgMonthlyRevenue={avgMonthlyRevenue} />
+      <DeliveryCostForm defaultValues={defaultValues} referenceMonth={referenceMonth} year={year} />
     </div>
   );
 }

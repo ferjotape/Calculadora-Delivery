@@ -6,7 +6,7 @@ import {
   deliveryCostSettingsSchema,
   type DeliveryCostSettingsInput,
 } from "@/lib/validation/delivery-cost-settings";
-import { computeAverageMonthlyRevenue } from "@/lib/monthly-revenue";
+import { getLatestCompleteMonth } from "@/lib/monthly-revenue";
 
 export type SaveDeliveryCostSettingsResult = {
   success: boolean;
@@ -34,7 +34,6 @@ export async function saveDeliveryCostSettings(
   const { error: deliveryCostError } = await supabase.from("delivery_cost_settings").upsert(
     {
       user_id: user.id,
-      monthly_orders: parsed.data.monthly_orders,
       delivery_value: parsed.data.delivery_value,
       updated_at: new Date().toISOString(),
     },
@@ -48,14 +47,16 @@ export async function saveDeliveryCostSettings(
   const year = new Date().getFullYear();
   const { data: monthlyRevenueRows } = await supabase
     .from("monthly_revenue")
-    .select("value")
+    .select("month, value, orders_count")
     .eq("user_id", user.id)
     .eq("year", year);
 
-  const avgMonthlyRevenue = computeAverageMonthlyRevenue(monthlyRevenueRows ?? []);
+  // Mesma fonte usada na tela: faturamento e pedidos do mês mais recente com
+  // os dois preenchidos, nunca uma média nem meses diferentes misturados.
+  const referenceMonth = getLatestCompleteMonth(monthlyRevenueRows ?? []);
   const ticketMedio =
-    avgMonthlyRevenue !== null && parsed.data.monthly_orders > 0
-      ? avgMonthlyRevenue / parsed.data.monthly_orders
+    referenceMonth !== null && referenceMonth.orders_count
+      ? referenceMonth.value / referenceMonth.orders_count
       : null;
   const freeDeliveryPct =
     ticketMedio !== null && ticketMedio > 0

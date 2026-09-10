@@ -23,6 +23,8 @@ type Props = {
   viewYear: number;
   currentYearValues: (number | null)[];
   viewYearValues: (number | null)[];
+  currentYearOrders: (number | null)[];
+  viewYearOrders: (number | null)[];
 };
 
 const MONTH_LABELS = [
@@ -59,6 +61,8 @@ export function CostSettingsForm({
   viewYear,
   currentYearValues,
   viewYearValues,
+  currentYearOrders,
+  viewYearOrders,
 }: Props) {
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(
@@ -66,8 +70,10 @@ export function CostSettingsForm({
   );
   // Sempre o ano corrente, editável — independe de qual ano está sendo visualizado abaixo.
   const [monthlyValues, setMonthlyValues] = useState<(number | null)[]>(currentYearValues);
+  const [monthlyOrders, setMonthlyOrders] = useState<(number | null)[]>(currentYearOrders);
   const isCurrentYearView = viewYear === currentYear;
   const displayedValues = isCurrentYearView ? monthlyValues : viewYearValues;
+  const displayedOrders = isCurrentYearView ? monthlyOrders : viewYearOrders;
 
   const {
     register,
@@ -120,6 +126,24 @@ export function CostSettingsForm({
       next[index] = raw === "" ? null : Number(raw);
       return next;
     });
+    // Sem faturamento não dá pra guardar nº de pedidos daquele mês (a coluna
+    // "value" é obrigatória em monthly_revenue) — limpa junto pra não sobrar
+    // um valor de pedidos "órfão" que parece salvo mas nunca vai persistir.
+    if (raw === "") {
+      setMonthlyOrders((prev) => {
+        const next = [...prev];
+        next[index] = null;
+        return next;
+      });
+    }
+  };
+
+  const handleOrdersChange = (index: number, raw: string) => {
+    setMonthlyOrders((prev) => {
+      const next = [...prev];
+      next[index] = raw === "" ? null : Number(raw);
+      return next;
+    });
   };
 
   const onSubmit = (values: CostSettingsInput) => {
@@ -131,7 +155,7 @@ export function CostSettingsForm({
           free_delivery_pct: defaultValues.free_delivery_pct,
           avg_monthly_revenue: avgMonthlyRevenue,
         }),
-        saveMonthlyRevenue({ year: currentYear, values: monthlyValues }),
+        saveMonthlyRevenue({ year: currentYear, values: monthlyValues, orders: monthlyOrders }),
       ]);
 
       if (!costResult.success || !revenueResult.success) {
@@ -258,7 +282,7 @@ export function CostSettingsForm({
 
         <Card
           title="Faturamento anual"
-          description="Informe o faturamento de cada mês para calcular a média usada no markup."
+          description="Informe o faturamento (e, se quiser, o nº de pedidos) de cada mês. A média de faturamento é usada no markup; o nº de pedidos do mês mais recente alimenta o Ticket Médio em Custo Motoboy."
           className="lg:col-span-2"
           headerExtra={
             <div className="flex items-center justify-between gap-2">
@@ -291,28 +315,57 @@ export function CostSettingsForm({
             </p>
           )}
 
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
-            {MONTH_LABELS.map((label, index) => (
-              <div key={label} className="flex flex-col gap-1">
-                <label htmlFor={`month-${index}`} className="px-1 text-xs font-medium text-neutral-500">
-                  {label}
-                </label>
-                <input
-                  id={`month-${index}`}
-                  type="number"
-                  inputMode="decimal"
-                  step="0.01"
-                  min="0"
-                  placeholder="—"
-                  disabled={!isCurrentYearView}
-                  value={displayedValues[index] ?? ""}
-                  onChange={
-                    isCurrentYearView ? (e) => handleMonthChange(index, e.target.value) : undefined
-                  }
-                  className={`${valueInputClass} ${!isCurrentYearView ? "bg-neutral-50 text-neutral-500 dark:bg-neutral-900" : ""}`}
-                />
-              </div>
-            ))}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+            {MONTH_LABELS.map((label, index) => {
+              const hasRevenue = displayedValues[index] !== null;
+              const ordersDisabled = !isCurrentYearView || !hasRevenue;
+              return (
+                <div key={label} className="flex flex-col gap-1">
+                  <label
+                    htmlFor={`month-${index}`}
+                    className="px-1 text-xs font-medium text-neutral-500"
+                  >
+                    {label} · Faturamento
+                  </label>
+                  <input
+                    id={`month-${index}`}
+                    type="number"
+                    inputMode="decimal"
+                    step="0.01"
+                    min="0"
+                    placeholder="—"
+                    disabled={!isCurrentYearView}
+                    value={displayedValues[index] ?? ""}
+                    onChange={
+                      isCurrentYearView ? (e) => handleMonthChange(index, e.target.value) : undefined
+                    }
+                    className={`${valueInputClass} ${!isCurrentYearView ? "bg-neutral-50 text-neutral-500 dark:bg-neutral-900" : ""}`}
+                  />
+                  <label
+                    htmlFor={`month-orders-${index}`}
+                    className="px-1 text-xs text-neutral-400"
+                  >
+                    Nº pedidos
+                  </label>
+                  <input
+                    id={`month-orders-${index}`}
+                    type="number"
+                    inputMode="numeric"
+                    step="1"
+                    min="0"
+                    placeholder={hasRevenue ? "—" : "preencha o faturamento"}
+                    disabled={ordersDisabled}
+                    value={displayedOrders[index] ?? ""}
+                    onChange={
+                      isCurrentYearView && hasRevenue
+                        ? (e) => handleOrdersChange(index, e.target.value)
+                        : undefined
+                    }
+                    className={`${valueInputClass} ${ordersDisabled ? "bg-neutral-50 text-neutral-400 dark:bg-neutral-900" : ""}`}
+                  />
+                </div>
+              );
+            })}
           </div>
 
           <div className="grid grid-cols-2 gap-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
