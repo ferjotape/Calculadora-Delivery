@@ -27,16 +27,9 @@ export async function saveMonthlyRevenue(
     return { success: false, error: "Sessão expirada. Faça login novamente." };
   }
 
-  // Nº de pedidos só existe pareado com o faturamento do mesmo mês (a coluna
-  // "value" é obrigatória em monthly_revenue) — por isso só entra no upsert
-  // quando o mês também tem faturamento preenchido; sem faturamento, o pedido
-  // informado é ignorado (a tela já desabilita esse campo nesse caso).
   const filledMonths = parsed.data.values
-    .map((value, index) => ({ month: index + 1, value, orders_count: parsed.data.orders[index] }))
-    .filter(
-      (row): row is { month: number; value: number; orders_count: number | null } =>
-        row.value !== null
-    );
+    .map((value, index) => ({ month: index + 1, value }))
+    .filter((row): row is { month: number; value: number } => row.value !== null);
 
   const emptyMonths = parsed.data.values
     .map((value, index) => ({ month: index + 1, value }))
@@ -50,7 +43,6 @@ export async function saveMonthlyRevenue(
         year: parsed.data.year,
         month: row.month,
         value: row.value,
-        orders_count: row.orders_count,
         updated_at: new Date().toISOString(),
       })),
       { onConflict: "user_id,year,month" }

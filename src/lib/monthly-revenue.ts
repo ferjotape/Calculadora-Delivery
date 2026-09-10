@@ -8,23 +8,16 @@ export function computeAverageMonthlyRevenue(rows: { value: number }[]): number 
   return total / rows.length;
 }
 
-export type MonthlyRevenueOrdersRow = { month: number; value: number; orders_count: number | null };
+export type MonthlyRevenueRow = { month: number; value: number };
 
 /**
- * Mês de referência pro Ticket Médio (Custo Motoboy): o mês mais recente (maior
- * número) que tem faturamento E nº de pedidos preenchidos. Única fonte de
- * verdade para essa conta — nunca divide o faturamento de um mês pelos pedidos
- * de outro, nem usa média de vários meses.
+ * Mês mais recente preenchido na aba Faturamento Anual (maior número do mês),
+ * pro bloco "Ticket Médio" de Custo Motoboy — nunca a média de vários meses.
+ * Atualiza sozinho assim que um mês mais novo é preenchido.
  */
-export function getLatestCompleteMonth(
-  rows: MonthlyRevenueOrdersRow[]
-): MonthlyRevenueOrdersRow | null {
-  const complete = rows.filter(
-    (row): row is MonthlyRevenueOrdersRow & { orders_count: number } =>
-      row.orders_count !== null && row.orders_count > 0
-  );
-  if (complete.length === 0) return null;
-  return complete.reduce((latest, row) => (row.month > latest.month ? row : latest));
+export function getLatestMonth(rows: MonthlyRevenueRow[]): MonthlyRevenueRow | null {
+  if (rows.length === 0) return null;
+  return rows.reduce((latest, row) => (row.month > latest.month ? row : latest));
 }
 
 /**

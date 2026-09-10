@@ -11,19 +11,10 @@ type Props = {
   searchParams: Promise<{ year?: string }>;
 };
 
-type MonthlyRow = { month: number; value: number; orders_count: number | null };
-
-function buildMonthlyValues(rows: MonthlyRow[] | null | undefined) {
+function buildMonthlyValues(rows: { month: number; value: number }[] | null | undefined) {
   return Array.from({ length: 12 }, (_, i) => {
     const row = rows?.find((r) => r.month === i + 1);
     return row ? row.value : null;
-  });
-}
-
-function buildMonthlyOrders(rows: MonthlyRow[] | null | undefined) {
-  return Array.from({ length: 12 }, (_, i) => {
-    const row = rows?.find((r) => r.month === i + 1);
-    return row ? row.orders_count : null;
   });
 }
 
@@ -48,14 +39,14 @@ export default async function CustosPage({ searchParams }: Props) {
       supabase.from("cost_settings").select("*").eq("user_id", user.id).maybeSingle(),
       supabase
         .from("monthly_revenue")
-        .select("month, value, orders_count")
+        .select("month, value")
         .eq("user_id", user.id)
         .eq("year", currentYear),
       viewYear === currentYear
         ? Promise.resolve({ data: null })
         : supabase
             .from("monthly_revenue")
-            .select("month, value, orders_count")
+            .select("month, value")
             .eq("user_id", user.id)
             .eq("year", viewYear),
     ]);
@@ -77,8 +68,6 @@ export default async function CustosPage({ searchParams }: Props) {
 
   const currentYearValues = buildMonthlyValues(currentYearRows);
   const viewYearValues = viewYear === currentYear ? currentYearValues : buildMonthlyValues(viewYearRows);
-  const currentYearOrders = buildMonthlyOrders(currentYearRows);
-  const viewYearOrders = viewYear === currentYear ? currentYearOrders : buildMonthlyOrders(viewYearRows);
 
   const costSummary = computeCostSettingsSummary(
     costSettings ? { ...costSettings, avg_monthly_revenue: liveAvgMonthlyRevenue } : null
@@ -103,8 +92,6 @@ export default async function CustosPage({ searchParams }: Props) {
         viewYear={viewYear}
         currentYearValues={currentYearValues}
         viewYearValues={viewYearValues}
-        currentYearOrders={currentYearOrders}
-        viewYearOrders={viewYearOrders}
       />
 
       <div className="flex shrink-0 justify-end border-t border-neutral-200 pt-3 dark:border-neutral-800">

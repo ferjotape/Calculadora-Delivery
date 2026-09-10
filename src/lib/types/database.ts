@@ -80,14 +80,14 @@ export type MonthlyRevenue = {
   year: number;
   month: number;
   value: number;
-  /** Nº de pedidos daquele mês — usado pelo Ticket Médio (Custo Motoboy), sempre pareado com o faturamento do MESMO mês. */
-  orders_count: number | null;
   updated_at: string;
 };
 
 export type DeliveryCostSettings = {
   id: string;
   user_id: string;
+  /** Valor único, atualizado manualmente pelo usuário — não vinculado a um mês específico. */
+  monthly_orders: number;
   delivery_value: number;
   updated_at: string;
 };
